@@ -15,17 +15,17 @@
     body {
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: flex-start;
       align-items: center;
       min-height: 100vh;
+      padding: 40px 0 0;
       background: #e8e8e8;
       font-family: serif;
     }
 
     .header {
-      position: absolute;
-      top: 40px;
-      left: 60px;
+      width: min(1100px, calc(100vw - 40px));
+      margin-bottom: 20px;
     }
 
     h3 {
@@ -36,23 +36,6 @@
 
     canvas {
       display: block;
-    }
-
-    .github-icon-link {
-        position: absolute;
-        bottom: 10px;
-        transform: translateX(-50%);
-        color: #555;
-        transition: color 0.2s;
-    }
-    .github-icon-link:hover {
-        color: #000;
-    }
-    #github-icon-1 {
-        left: 210px; /* padding(60) + frameW(300)/2 */
-    }
-    #github-icon-3 {
-        left: 890px; /* padding(60) + frameW(300) + spacing(40) + frameW(300) + spacing(40) + frameW(300)/2 */
     }
 
     footer {
@@ -66,17 +49,12 @@
     /* Responsive styles */
     @media (max-width: 1100px) {
       body {
-        justify-content: flex-start;
         padding-top: 80px;
       }
 
       .header {
-        position: relative;
-        top: 0;
-        left: 0;
         text-align: center;
         width: 100%;
-        margin-bottom: 20px;
       }
 
       .frame-container {
@@ -84,15 +62,8 @@
         padding: 20px !important;
         margin: 0 auto !important;
         display: flex;
-        flex-direction: column; /* Stack frames vertically */
+        flex-direction: column;
         align-items: center;
-      }
-
-      #github-icon-1, #github-icon-3 {
-        position: relative;
-        left: auto !important;
-        display: inline-block;
-        margin: 10px;
       }
 
       footer {
@@ -109,426 +80,340 @@
   </div >
   <div class="frame-container" style="position: relative; width: 1100px; margin: 0 auto; padding-bottom: 50px;">
     <canvas id="canvas"></canvas>
-    <a href="https://github.com/TypoStudio/einkclock" target="_blank" class="github-icon-link" id="github-icon-1" title="View source on GitHub">
-        <svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path></svg>
-    </a>
-    <a href="https://github.com/TypoStudio/ssh-tunnel-for-macos" target="_blank" class="github-icon-link" id="github-icon-3" title="View source on GitHub">
-        <svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path></svg>
-    </a>
   </div >
   <script>
-    const canvas = document.getElementById('canvas')
-    const ctx = canvas.getContext('2d')
+    // --- Global State ---
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const frames = [];
+    const githubIcons = [];
+    let mouse = { x: -1000, y: -1000 };
+    let animationFrameId = null;
+    const fonts = ["serif", "sans-serif", "monospace", "cursive", "fantasy"];
+    const GITHUB_ICON_PATH = new Path2D("M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z");
+    const githubLinks = {
+      EINKCLOCK: "https://github.com/TypoStudio/einkclock",
+      SSHTUNNELMANAGER: "https://github.com/TypoStudio/ssh-tunnel-for-macos"
+    };
+    const projectLinks = {
+      EINKCLOCK: "https://typostudio.github.io/einkclock/"
+    };
 
-    const dpr = window.devicePixelRatio || 1
-    const frameW = 300
-    const frameH = 400
-    const border = 18
-    const letterMargin = 12
-    const spacing = 40
-    const padding = 60
-    const canvasW = (frameW * 3) + (spacing * 2) + (padding * 2)
-    const canvasH = frameH + padding * 2
 
-    canvas.width = canvasW * dpr
-    canvas.height = canvasH * dpr
-    canvas.style.width = canvasW + 'px'
-    canvas.style.height = canvasH + 'px'
-    ctx.scale(dpr, dpr)
+    // --- Main Setup and Drawing Function ---
+    function setupAndDraw() {
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+        }
+        frames.length = 0; // Clear frames for redraw
+        githubIcons.length = 0;
 
-    const fonts = ["serif", "sans-serif", "monospace", "cursive", "fantasy"]
-    const frames = []
-    let mouse = { x: -1000, y: -1000 }
+        // --- Layout Constants ---
+        const dpr = window.devicePixelRatio || 1;
+        const frameW = 300;
+        const frameH = 400;
+        const border = 18;
+        const letterMargin = 12;
+        const spacing = 40;
+        const padding = 60;
+        const verticalSpacing = 88;
+        const verticalPadding = 96;
+        const bottomIconArea = 50;
+        const BREAKPOINT = 1150; // Width to switch to vertical
 
+        const isVertical = window.innerWidth < BREAKPOINT;
+        
+        // --- Canvas and Icon Sizing ---
+        let canvasW, canvasH;
+        const canvasWrapper = canvas.parentElement;
+
+        if (isVertical) {
+            canvasW = frameW + verticalPadding * 2;
+            canvasH = (frameH * 3) + (verticalSpacing * 2) + verticalPadding * 2;
+            canvasWrapper.style.width = canvasW + 'px';
+            canvasWrapper.style.paddingBottom = '0px';
+        } else {
+            canvasW = (frameW * 3) + (spacing * 2) + padding * 2;
+            canvasH = frameH + padding * 2 + bottomIconArea;
+            canvasWrapper.style.width = canvasW + 'px';
+            canvasWrapper.style.paddingBottom = '0px';
+        }
+        
+        canvas.width = canvasW * dpr;
+        canvas.height = canvasH * dpr;
+        canvas.style.width = canvasW + 'px';
+        canvas.style.height = canvasH + 'px';
+        ctx.resetTransform();
+        ctx.scale(dpr, dpr);
+        
+        // --- Initialize Frames ---
+        if (isVertical) {
+            initFrame(verticalPadding, verticalPadding, "EINKCLOCK", true);
+            initFrame(verticalPadding, verticalPadding + frameH + verticalSpacing, "TRIPBALL", true);
+            initFrame(verticalPadding, verticalPadding + (frameH + verticalSpacing) * 2, "SSHTUNNELMANAGER", true);
+            registerGithubIcon(verticalPadding + frameW / 2, verticalPadding + frameH + verticalSpacing / 2, "EINKCLOCK");
+            registerGithubIcon(verticalPadding + frameW / 2, verticalPadding + (frameH + verticalSpacing) * 2 + frameH + verticalSpacing / 2, "SSHTUNNELMANAGER");
+        } else {
+            initFrame(padding, padding, "EINKCLOCK", true);
+            initFrame(padding + frameW + spacing, padding, "TRIPBALL", true);
+            initFrame(padding + (frameW + spacing) * 2, padding, "SSHTUNNELMANAGER", true);
+            registerGithubIcon(padding + frameW / 2, padding + frameH + 28, "EINKCLOCK");
+            registerGithubIcon(padding + (frameW + spacing) * 2 + frameW / 2, padding + frameH + 28, "SSHTUNNELMANAGER");
+        }
+
+        // --- Run Animation Loop ---
+        animate(canvasW, canvasH);
+    }
+    
     function initFrame(fx, fy, text, isInteractive = false)
     {
-      // frame 객체에 hover 상태 관리 및 mode, startTime 관련 속성 추가
-      const frame = {
-        fx, fy, text, letters: [], isHovered: false, wasHovered: false, hoverStartTime: 0, mode: 0
-      }
+      const frameW = 300, frameH = 400, border = 18, letterMargin = 12;
+      const frame = { fx, fy, text, letters: [], isHovered: false, wasHovered: false, hoverStartTime: 0, mode: 0 };
 
-      // 배경 및 프레임 그리기 함수 (매 프레임 호출용)
       frame.drawStatic = () =>
       {
         ctx.save()
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.18)'
-        ctx.shadowBlur = 30
-        ctx.shadowOffsetX = 0
-        ctx.shadowOffsetY = 6
-        ctx.fillStyle = '#f0f0f0'
-        ctx.fillRect(fx, fy, frameW, frameH)
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.18)'; ctx.shadowBlur = 30;
+        ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 6;
+        ctx.fillStyle = '#f0f0f0'; ctx.fillRect(fx, fy, frameW, frameH);
         ctx.restore()
-        ctx.fillStyle = '#f0f0f0'
-        ctx.fillRect(fx, fy, frameW, frameH)
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)'
-        ctx.lineWidth = 1
-        ctx.strokeRect(fx + 0.5, fy + 0.5, frameW - 1, frameH - 1)
-        ctx.fillStyle = '#ffffff'
-        ctx.fillRect(fx + border, fy + border, frameW - border * 2, frameH - border * 2)
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.04)'
-        ctx.lineWidth = 0.5
-        ctx.strokeRect(fx + border, fy + border, frameW - border * 2, frameH - border * 2)
+        ctx.fillStyle = '#f0f0f0'; ctx.fillRect(fx, fy, frameW, frameH);
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)'; ctx.lineWidth = 1;
+        ctx.strokeRect(fx + 0.5, fy + 0.5, frameW - 1, frameH - 1);
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(fx + border, fy + border, frameW - border * 2, frameH - border * 2);
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.04)'; ctx.lineWidth = 0.5;
+        ctx.strokeRect(fx + border, fy + border, frameW - border * 2, frameH - border * 2);
       }
 
-      if (!text)
-      {
-        frames.push(frame)
-        return
+      if (!text) { frames.push(frame); return; }
+
+      const rawLetters = text.split("").map(l => Math.random() > 0.5 ? l.toUpperCase() : l.toLowerCase());
+      const innerX = fx + border, innerY = fy + border;
+      const innerW = frameW - border * 2, innerH = frameH - border * 2;
+      const placed = [], verticalSegment = innerH / rawLetters.length;
+      const extraBigIndex = Math.floor(Math.random() * rawLetters.length);
+      const bigIndices = [];
+      while (bigIndices.length < 2 && rawLetters.length > 3) {
+        const r = Math.floor(Math.random() * rawLetters.length);
+        if (r !== extraBigIndex && !bigIndices.includes(r)) bigIndices.push(r);
       }
 
-      const rawLetters = text.split("").map(l => Math.random() > 0.5 ? l.toUpperCase() : l.toLowerCase())
-      const innerX = fx + border
-      const innerY = fy + border
-      const innerW = frameW - border * 2
-      const innerH = frameH - border * 2
-      const placed = []
-      const verticalSegment = innerH / rawLetters.length
+      rawLetters.forEach((char, i) => {
+        let fontSize = Math.floor(Math.random() * (verticalSegment * 0.5)) + 30;
+        if (i === extraBigIndex) fontSize *= 3.5; else if (bigIndices.includes(i)) fontSize *= 2.0;
 
-      // 무작위로 인덱스를 선택하여 크기 계층화 (1개 아주 크게, 2개 크게)
-      const extraBigIndex = Math.floor(Math.random() * rawLetters.length)
-      const bigIndices = []
-      while (bigIndices.length < 2 && rawLetters.length > 3)
-      {
-        const r = Math.floor(Math.random() * rawLetters.length)
-        if (r !== extraBigIndex && !bigIndices.includes(r)) bigIndices.push(r)
-      }
+        const font = fonts[Math.floor(Math.random() * fonts.length)], radius = fontSize * 0.45;
+        const segmentTop = innerY + (i * verticalSegment);
+        let baseX, baseY, baseAngle, found = false, bestX, bestY, minOverlap = Infinity;
 
-      rawLetters.forEach((char, i) =>
-      {
-        let fontSize = Math.floor(Math.random() * (verticalSegment * 0.5)) + 30
-        if (i === extraBigIndex) fontSize *= 3.5 // 가장 크게
-        else if (bigIndices.includes(i)) fontSize *= 2.0 // 두번째로 크게
-
-        const font = fonts[Math.floor(Math.random() * fonts.length)]
-        const radius = fontSize * 0.45
-        const segmentTop = innerY + (i * verticalSegment)
-
-        let baseX, baseY, baseAngle, found = false
-        let bestX, bestY, minOverlap = Infinity
-
-        for (let attempt = 0; attempt < 300; attempt++)
-        {
-          let tx = innerX + radius + Math.random() * (innerW - radius * 2)
-          let ty = segmentTop + radius + Math.random() * (verticalSegment - radius * 2)
-          tx = Math.max(innerX + radius + letterMargin, Math.min(tx, innerX + innerW - radius - letterMargin))
-          ty = Math.max(innerY + radius + letterMargin, Math.min(ty, innerY + innerH - radius - letterMargin))
-
-          let maxOverlap = 0
-          let overlapCount = 0
-          for (const other of placed)
-          {
-            const dist = Math.sqrt((tx - other.x) ** 2 + (ty - other.y) ** 2)
-            const overlap = (radius + other.radius) - dist
-            if (overlap > 0)
-            {
-              overlapCount++; maxOverlap = Math.max(maxOverlap, overlap)
-            }
+        for (let attempt = 0; attempt < 300; attempt++) {
+          let tx = innerX + radius + Math.random() * (innerW - radius * 2);
+          let ty = segmentTop + radius + Math.random() * (verticalSegment - radius * 2);
+          tx = Math.max(innerX + radius + letterMargin, Math.min(tx, innerX + innerW - radius - letterMargin));
+          ty = Math.max(innerY + radius + letterMargin, Math.min(ty, innerY + innerH - radius - letterMargin));
+          let maxOverlap = 0, overlapCount = 0;
+          for (const other of placed) {
+            const dist = Math.sqrt((tx - other.x) ** 2 + (ty - other.y) ** 2);
+            const overlap = (radius + other.radius) - dist;
+            if (overlap > 0) { overlapCount++; maxOverlap = Math.max(maxOverlap, overlap); }
           }
-          if (overlapCount === 0) { baseX = tx; baseY = ty; found = true; break }
-          if (maxOverlap < minOverlap)
-          {
-            minOverlap = maxOverlap; bestX = tx; bestY = ty
-          }
+          if (overlapCount === 0) { baseX = tx; baseY = ty; found = true; break; }
+          if (maxOverlap < minOverlap) { minOverlap = maxOverlap; bestX = tx; bestY = ty; }
         }
-        if (!found) { baseX = bestX; baseY = bestY }
-        placed.push({ x: baseX, y: baseY, radius })
+        if (!found) { baseX = bestX; baseY = bestY; }
+        placed.push({ x: baseX, y: baseY, radius });
 
-        if (i === 0) baseAngle = 0
-        else
-        {
-          const confusingChars = "nupdbqIl1NZ690oO"
-          if (confusingChars.includes(char)) baseAngle = (Math.random() > 0.5) ? 0 :
-            Math.PI / 2
-          else baseAngle = [0, Math.PI / 2, Math.PI, Math.PI * .5][Math.floor(Math.random() * 4)]
+        if (i === 0) baseAngle = 0;
+        else {
+          const confusingChars = "nupdbqIl1NZ690oO";
+          if (confusingChars.includes(char)) baseAngle = (Math.random() > 0.5) ? 0 : Math.PI / 2;
+          else baseAngle = [0, Math.PI / 2, Math.PI, Math.PI * .5][Math.floor(Math.random() * 4)];
         }
 
-        // 마우스 오버 시 목표 위치 (EINK / CLOCK 또는 TRIP / BALL 또는 SSH/TUNNEL/MANAGER)
-        let targetX = baseX, targetY = baseY
-        if (isInteractive)
-        {
-          if (text === "EINKCLOCK")
-          {
-            if (i < 4)
-            { // EINK
-              targetX = innerX + (innerW / 5) * (i + 1)
-              targetY = innerY + innerH * 0.35
-            } else
-            { // CLOCK
-              targetX = innerX + (innerW / 6) * (i - 4 + 1)
-              targetY = innerY + innerH * 0.65
-            }
-          } else if (text === "TRIPBALL")
-          {
-            if (i < 4)
-            { // TRIP
-              targetX = innerX + (innerW / 5) * (i + 1)
-              targetY = innerY + innerH * 0.35
-            } else
-            { // BALL
-              targetX = innerX + (innerW / 5) * (i - 4 + 1)
-              targetY = innerY + innerH * 0.65
-            }
-          } else if (text === "SSHTUNNELMANAGER")
-          {
-            if (i < 3)
-            { // SSH
-              targetX = innerX + (innerW / 4) * (i + 1)
-              targetY = innerY + innerH * 0.25
-            } else if (i < 9)
-            { // TUNNEL
-              targetX = innerX + (innerW / 7) * (i - 3 + 1)
-              targetY = innerY + innerH * 0.5
-            } else
-            { // MANAGER
-              targetX = innerX + (innerW / 8) * (i - 9 + 1)
-              targetY = innerY + innerH * 0.75
-            }
+        let targetX = baseX, targetY = baseY;
+        if (isInteractive) {
+          if (text === "EINKCLOCK") {
+            if (i < 4) { targetX = innerX + (innerW / 5) * (i + 1); targetY = innerY + innerH * 0.35; }
+            else { targetX = innerX + (innerW / 6) * (i - 4 + 1); targetY = innerY + innerH * 0.65; }
+          } else if (text === "TRIPBALL") {
+            if (i < 4) { targetX = innerX + (innerW / 5) * (i + 1); targetY = innerY + innerH * 0.35; }
+            else { targetX = innerX + (innerW / 5) * (i - 4 + 1); targetY = innerY + innerH * 0.65; }
+          } else if (text === "SSHTUNNELMANAGER") {
+            if (i < 3) { targetX = innerX + (innerW / 4) * (i + 1); targetY = innerY + innerH * 0.25; }
+            else if (i < 9) { targetX = innerX + (innerW / 7) * (i - 3 + 1); targetY = innerY + innerH * 0.5; }
+            else { targetX = innerX + (innerW / 8) * (i - 9 + 1); targetY = innerY + innerH * 0.75; }
           }
         }
-
-        frame.letters.push({
-          char, baseX, baseY, baseAngle,
-          targetX, targetY, targetAngle: 0,
-          currX: baseX, currY: baseY, currAngle: baseAngle,
-          fontSize, font,
-          index: i // 글자의 인덱스 저장
-        })
-      })
-      frames.push(frame)
+        frame.letters.push({ char, baseX, baseY, baseAngle, targetX, targetY, targetAngle: 0, currX: baseX, currY: baseY, currAngle: baseAngle, fontSize, font, index: i });
+      });
+      frames.push(frame);
     }
 
-    initFrame(padding, padding, "EINKCLOCK", true)
-    initFrame(padding + frameW + spacing, padding, "TRIPBALL", true)
-    initFrame(padding + (frameW + spacing) * 2, padding, "SSHTUNNELMANAGER", true)
-
-    function animate()
-    {
-      const now = Date.now()
-      ctx.clearRect(0, 0, canvasW, canvasH)
-      let cursorToSet = 'default' // 기본 커서
-
-      frames.forEach((frame, idx) =>
-      {
-        frame.drawStatic()
-        const isHovered = mouse.x >= frame.fx && mouse.x <= frame.fx + frameW &&
-          mouse.y >= frame.fy && mouse.y <= frame.fy + frameH
-
-        // 링크가 있는 프레임 위에 마우스가 있는지 확인하여 커서 변경
-        if (isHovered && (frame.text === "EINKCLOCK" || frame.text === "SSHTUNNELMANAGER")) {
-          cursorToSet = 'pointer'
-        }
-
-        // 호버 상태가 변할 때 모드 전환 및 시간 기록
-        if (isHovered && !frame.wasHovered)
-        {
-          frame.mode = (frame.mode + 1) % 2 // 모드 전환 (0: 부드러운 트랜지션, 1: 순차적 나타나기)
-          frame.hoverStartTime = now
-        }
-        // 호버가 끝날 때 각 글자의 baseX/baseY를 새로운 랜덤 위치로 재설정
-        if (!isHovered && frame.wasHovered)
-        {
-          const innerX = frame.fx + border
-          const innerY = frame.fy + border
-          const innerW = frameW - border * 2
-          const innerH = frameH - border * 2
-          const numLetters = frame.letters.length
-          const verticalSegment = innerH / numLetters
-          const extraBigIndex = Math.floor(Math.random() * numLetters)
-          const bigIndices = []
-          while (bigIndices.length < 2 && numLetters > 3)
-          {
-            const r = Math.floor(Math.random() * numLetters)
-            if (r !== extraBigIndex && !bigIndices.includes(r)) bigIndices.push(r)
-          }
-
-          // 먼저 새로운 글자 크기와 기타 속성을 할당합니다.
-          frame.letters.forEach((l, i) =>
-          {
-            let fontSize = Math.floor(Math.random() * (verticalSegment * 0.5)) + 30
-            if (i === extraBigIndex) fontSize *= 3.5
-            else if (bigIndices.includes(i)) fontSize *= 2.0
-            l.fontSize = fontSize
-
-            l.baseAngle = [0, Math.PI / 2, Math.PI, Math.PI * 1.5][Math.floor(Math.random() * 4)]
-            l.char = Math.random() > 0.5 ? l.char.toUpperCase() : l.char.toLowerCase()
-            l.font = fonts[Math.floor(Math.random() * fonts.length)]
-          })
-
-          // 글자를 크기순으로 정렬하여 큰 글자부터 배치 우선권을 줍니다.
-          const sortedLetters = [...frame.letters].sort((a, b) => b.fontSize - a.fontSize)
-          const newlyPlaced = []
-
-          sortedLetters.forEach(l =>
-          {
-            const radius = l.fontSize * 0.45
-            let baseX, baseY, found = false
-            let bestX, bestY, minOverlap = Infinity
-
-            // 겹치지 않는 위치를 찾습니다.
-            for (let attempt = 0; attempt < 200; attempt++)
-            {
-              let tx = innerX + radius + Math.random() * (innerW - radius * 2)
-              let ty = innerY + radius + Math.random() * (innerH - radius * 2)
-              tx = Math.max(innerX + radius + letterMargin, Math.min(tx, innerX + innerW - radius - letterMargin))
-              ty = Math.max(innerY + radius + letterMargin, Math.min(ty, innerY + innerH - radius - letterMargin))
-
-              let maxOverlap = 0
-              let overlapCount = 0
-              for (const other of newlyPlaced)
-              {
-                const dist = Math.sqrt((tx - other.x) ** 2 + (ty - other.y) ** 2)
-                const overlap = (radius + other.radius) - dist
-                if (overlap > 0)
-                {
-                  overlapCount++
-                  maxOverlap = Math.max(maxOverlap, overlap)
-                }
-              }
-
-              if (overlapCount === 0)
-              {
-                baseX = tx
-                baseY = ty
-                found = true
-                break
-              }
-              if (maxOverlap < minOverlap)
-              {
-                minOverlap = maxOverlap
-                bestX = tx
-                bestY = ty
-              }
-            }
-            if (!found)
-            {
-              baseX = bestX
-              baseY = bestY
-            }
-
-            l.baseX = baseX
-            l.baseY = baseY
-            newlyPlaced.push({ x: baseX, y: baseY, radius })
-          })
-        }
-        frame.wasHovered = isHovered
-
-        frame.letters.forEach(l =>
-        {
-          let tx, ty, ta, alpha = 1
-          const staggerDelay = 100 // 글자 하나당 나타나는 간격 (ms)
-          const elapsed = now - frame.hoverStartTime
-
-          if (isHovered)
-          {
-            // --- 전환 모드 결정 로직 ---
-            if (frame.mode === 0)
-            {
-              // 모드 0: 부드러운 트랜지션 모드
-              // 글자들이 무작위 기본 위치에서 최종 목표 위치로 한 번에 부드럽게 이동합니다.
-              tx = l.targetX; ty = l.targetY; ta = l.targetAngle
-              alpha = 1 // 항상 완전히 보이게 함
-
-              // 현재 위치에서 목표 위치(tx, ty, ta)로 부드럽게 보간 (이동/회전 애니메이션)
-              // 모드 1에서 나타나기 전에는 alpha가 0이므로 보이지 않음
-              // 모드 1에서 나타난 후에는 tx/ty/ta가 targetX/Y/Angle로 고정되어 있어, 거기까지 보간됨 (사실상 즉시 이동 후 alpha만 변화)
-              l.currX += (tx - l.currX) * 0.12
-              l.currY += (ty - l.currY) * 0.12
-
-              let diff = ta - l.currAngle
-              while (diff > Math.PI) diff -= Math.PI * 2
-              while (diff < -Math.PI) diff += Math.PI * 2
-              l.currAngle += diff * 0.12
-            } else
-            { // frame.mode === 1
-              // 모드 1: 최종 위치에 하나씩 순차적으로 나타나는 모드
-              const targetTime = l.index * staggerDelay // 각 글자의 순서(index)에 따라 나타나는 시간 결정
-              if (elapsed > targetTime)
-              {
-                // 지정된 시간이 지난 후: 최종 목표 위치로 즉시 설정하고 페이드인 효과 적용
-                l.currX = l.targetX
-                l.currY = l.targetY
-                l.currAngle = l.targetAngle
-                alpha = Math.min(1, (elapsed - targetTime) / 200) // 페이드인 효과 (200ms)
-              } else
-              {
-                // 지정된 시간 이전: 기본 위치에 머물면서 완전히 숨김 (alpha = 0)
-                l.currX = l.baseX
-                l.currY = l.baseY
-                l.currAngle = l.baseAngle
-                // alpha = 0 // 완전히 숨김
-              }
-            }
-          } else
-          { // 호버 상태가 아닐 때
-            // 마우스가 액자 밖에 있으면 항상 기본 위치로 복귀하고 완전히 보이게 함
-            tx = l.baseX; ty = l.baseY; ta = l.baseAngle
-            alpha = 1
-
-            // 현재 위치에서 목표 위치(tx, ty, ta)로 부드럽게 보간 (이동/회전 애니메이션)
-            // 모드 1에서 나타나기 전에는 alpha가 0이므로 보이지 않음
-            // 모드 1에서 나타난 후에는 tx/ty/ta가 targetX/Y/Angle로 고정되어 있어, 거기까지 보간됨 (사실상 즉시 이동 후 alpha만 변화)
-            l.currX += (tx - l.currX) * 0.12
-            l.currY += (ty - l.currY) * 0.12
-
-            let diff = ta - l.currAngle
-            while (diff > Math.PI) diff -= Math.PI * 2
-            while (diff < -Math.PI) diff += Math.PI * 2
-            l.currAngle += diff * 0.12
-          }
-          // --- 전환 모드 결정 로직 끝 ---
-
-          if (alpha > 0)
-          { // alpha가 0보다 클 때만 그림
-            ctx.save()
-            ctx.globalAlpha = alpha // 페이드인/아웃 적용
-            ctx.font = `bold ${l.fontSize}px ${l.font}`
-            ctx.fillStyle = '#000000'
-            ctx.textBaseline = 'middle'
-            ctx.textAlign = 'center'
-            ctx.translate(l.currX, l.currY)
-            ctx.rotate(l.currAngle)
-            ctx.fillText(l.char, 0, 0)
-            ctx.restore()
-          }
-        })
-      })
-
-      canvas.style.cursor = cursorToSet // 모든 프레임 검사 후 커서 설정
-
-      requestAnimationFrame(animate)
+    function registerGithubIcon(x, y, projectKey) {
+      githubIcons.push({
+        x,
+        y,
+        size: 24,
+        radius: 16,
+        projectKey,
+        href: githubLinks[projectKey]
+      });
     }
 
-    canvas.addEventListener('mousemove', (e) =>
-    {
-      const rect = canvas.getBoundingClientRect()
-      mouse.x = (e.clientX - rect.left) * (canvasW / rect.width)
-      mouse.y = (e.clientY - rect.top) * (canvasH / rect.height)
-    })
+    function getHoveredGithubIcon(x, y) {
+      return githubIcons.find(icon => Math.hypot(x - icon.x, y - icon.y) <= icon.radius) || null;
+    }
 
-    canvas.addEventListener('mouseleave', () =>
-    {
-      mouse.x = -1000
-      mouse.y = -1000
-    })
+    function drawGithubIcon(icon, isHovered) {
+      ctx.save();
+      ctx.translate(icon.x - icon.size / 2, icon.y - icon.size / 2);
+      ctx.scale(icon.size / 16, icon.size / 16);
+      ctx.fillStyle = isHovered ? '#000000' : '#555555';
+      ctx.fill(GITHUB_ICON_PATH);
+      ctx.restore();
+    }
 
+    function animate(canvasW, canvasH) {
+      const frameW = 300, frameH = 400, border = 18, letterMargin = 12;
+      const now = Date.now();
+      ctx.clearRect(0, 0, canvasW, canvasH);
+      let cursorToSet = 'default';
+      const hoveredGithubIcon = getHoveredGithubIcon(mouse.x, mouse.y);
+
+      frames.forEach((frame, idx) => {
+        frame.drawStatic();
+        const isHovered = mouse.x >= frame.fx && mouse.x <= frame.fx + frameW && mouse.y >= frame.fy && mouse.y <= frame.fy + frameH;
+        if (isHovered && (frame.text === "EINKCLOCK" || frame.text === "SSHTUNNELMANAGER")) { cursorToSet = 'pointer'; }
+
+        if (isHovered && !frame.wasHovered) {
+          frame.mode = (frame.mode + 1) % 2;
+          frame.hoverStartTime = now;
+        }
+        if (!isHovered && frame.wasHovered) {
+          const innerX = frame.fx + border, innerY = frame.fy + border;
+          const innerW = frameW - border * 2, innerH = frameH - border * 2;
+          const numLetters = frame.letters.length, verticalSegment = innerH / numLetters;
+          const extraBigIndex = Math.floor(Math.random() * numLetters), bigIndices = [];
+          while (bigIndices.length < 2 && numLetters > 3) {
+            const r = Math.floor(Math.random() * numLetters);
+            if (r !== extraBigIndex && !bigIndices.includes(r)) bigIndices.push(r);
+          }
+          frame.letters.forEach((l, i) => {
+            let fontSize = Math.floor(Math.random() * (verticalSegment * 0.5)) + 30;
+            if (i === extraBigIndex) fontSize *= 3.5; else if (bigIndices.includes(i)) fontSize *= 2.0;
+            l.fontSize = fontSize;
+            l.baseAngle = [0, Math.PI / 2, Math.PI, Math.PI * 1.5][Math.floor(Math.random() * 4)];
+            l.char = Math.random() > 0.5 ? l.char.toUpperCase() : l.char.toLowerCase();
+            l.font = fonts[Math.floor(Math.random() * fonts.length)];
+          });
+          const sortedLetters = [...frame.letters].sort((a, b) => b.fontSize - a.fontSize);
+          const newlyPlaced = [];
+          sortedLetters.forEach(l => {
+            const radius = l.fontSize * 0.45;
+            let baseX, baseY, found = false, bestX, bestY, minOverlap = Infinity;
+            for (let attempt = 0; attempt < 200; attempt++) {
+              let tx = innerX + radius + Math.random() * (innerW - radius * 2);
+              let ty = innerY + radius + Math.random() * (innerH - radius * 2);
+              tx = Math.max(innerX + radius + letterMargin, Math.min(tx, innerX + innerW - radius - letterMargin));
+              ty = Math.max(innerY + radius + letterMargin, Math.min(ty, innerY + innerH - radius - letterMargin));
+              let maxOverlap = 0, overlapCount = 0;
+              for (const other of newlyPlaced) {
+                const dist = Math.sqrt((tx - other.x) ** 2 + (ty - other.y) ** 2);
+                if ((radius + other.radius) - dist > 0) { overlapCount++; maxOverlap = Math.max(maxOverlap, (radius + other.radius) - dist); }
+              }
+              if (overlapCount === 0) { baseX = tx; baseY = ty; found = true; break; }
+              if (maxOverlap < minOverlap) { minOverlap = maxOverlap; bestX = tx; bestY = ty; }
+            }
+            if (!found) { baseX = bestX; baseY = bestY; }
+            l.baseX = baseX; l.baseY = baseY;
+            newlyPlaced.push({ x: baseX, y: baseY, radius });
+          });
+        }
+        frame.wasHovered = isHovered;
+
+        frame.letters.forEach(l => {
+          let tx, ty, ta, alpha = 1;
+          const staggerDelay = 100, elapsed = now - frame.hoverStartTime;
+          if (isHovered) {
+            if (frame.mode === 0) {
+              tx = l.targetX; ty = l.targetY; ta = l.targetAngle; alpha = 1;
+              l.currX += (tx - l.currX) * 0.12; l.currY += (ty - l.currY) * 0.12;
+              let diff = ta - l.currAngle;
+              while (diff > Math.PI) diff -= Math.PI * 2; while (diff < -Math.PI) diff += Math.PI * 2;
+              l.currAngle += diff * 0.12;
+            } else {
+              const targetTime = l.index * staggerDelay;
+              if (elapsed > targetTime) {
+                l.currX = l.targetX; l.currY = l.targetY; l.currAngle = l.targetAngle;
+                alpha = Math.min(1, (elapsed - targetTime) / 200);
+              } else {
+                l.currX = l.baseX; l.currY = l.baseY; l.currAngle = l.baseAngle;
+              }
+            }
+          } else {
+            tx = l.baseX; ty = l.baseY; ta = l.baseAngle; alpha = 1;
+            l.currX += (tx - l.currX) * 0.12; l.currY += (ty - l.currY) * 0.12;
+            let diff = ta - l.currAngle;
+            while (diff > Math.PI) diff -= Math.PI * 2; while (diff < -Math.PI) diff += Math.PI * 2;
+            l.currAngle += diff * 0.12;
+          }
+          if (alpha > 0) {
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.font = `bold ${l.fontSize}px ${l.font}`;
+            ctx.fillStyle = '#000000';
+            ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
+            ctx.translate(l.currX, l.currY); ctx.rotate(l.currAngle);
+            ctx.fillText(l.char, 0, 0);
+            ctx.restore();
+          }
+        });
+      });
+      githubIcons.forEach(icon => drawGithubIcon(icon, hoveredGithubIcon === icon));
+      if (hoveredGithubIcon) {
+        cursorToSet = 'pointer';
+      }
+      canvas.style.cursor = cursorToSet;
+      animationFrameId = requestAnimationFrame(() => animate(canvasW, canvasH));
+    }
+
+    // --- Event Listeners ---
+    canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const canvasCurrentW = canvas.width / (window.devicePixelRatio || 1);
+        const canvasCurrentH = canvas.height / (window.devicePixelRatio || 1);
+        mouse.x = (e.clientX - rect.left) * (canvasCurrentW / rect.width);
+        mouse.y = (e.clientY - rect.top) * (canvasCurrentH / rect.height);
+    });
+    canvas.addEventListener('mouseleave', () => { mouse.x = -1000; mouse.y = -1000; });
     canvas.addEventListener('click', (e) => {
-      const rect = canvas.getBoundingClientRect()
-      const clickX = (e.clientX - rect.left) * (canvasW / rect.width)
-      const clickY = (e.clientY - rect.top) * (canvasH / rect.height)
+      const rect = canvas.getBoundingClientRect();
+      const canvasCurrentW = canvas.width / (window.devicePixelRatio || 1);
+      const canvasCurrentH = canvas.height / (window.devicePixelRatio || 1);
+      const clickX = (e.clientX - rect.left) * (canvasCurrentW / rect.width);
+      const clickY = (e.clientY - rect.top) * (canvasCurrentH / rect.height);
+      const clickedGithubIcon = getHoveredGithubIcon(clickX, clickY);
+
+      if (clickedGithubIcon) {
+        window.open(clickedGithubIcon.href, "_blank");
+        return;
+      }
 
       frames.forEach(frame => {
-        if (clickX >= frame.fx && clickX <= frame.fx + frameW &&
-            clickY >= frame.fy && clickY <= frame.fy + frameH) {
-          if (frame.text === "EINKCLOCK") {
-            window.open("https://typostudio.github.io/einkclock/", "_blank")
+        const frameW = 300, frameH = 400;
+        if (clickX >= frame.fx && clickX <= frame.fx + frameW && clickY >= frame.fy && clickY <= frame.fy + frameH) {
+          if (projectLinks[frame.text]) {
+            window.open(projectLinks[frame.text], "_blank");
           }
         }
-      })
-    })
+      });
+    });
 
-    animate();
+    // --- Initial Load and Resize ---
+    window.addEventListener('resize', setupAndDraw);
+    setupAndDraw(); // Initial call
   </script>
   <footer class="footer-content">
-    <p>&copy; 2026 TypoStudio</p>
+    <p>&copy; 2026 TypoStudio. All rights reserved.</p>
   </footer>
 </body >
