@@ -58,8 +58,6 @@
       }
 
       .frame-container {
-        width: 90% !important;
-        padding: 20px !important;
         margin: 0 auto !important;
         display: flex;
         flex-direction: column;
@@ -93,10 +91,12 @@
     const GITHUB_ICON_PATH = new Path2D("M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z");
     const githubLinks = {
       EINKCLOCK: "https://github.com/TypoStudio/einkclock",
-      SSHTUNNELMANAGER: "https://github.com/TypoStudio/ssh-tunnel-for-macos"
+      SSHTUNNELMANAGER: "https://github.com/TypoStudio/ssh-tunnel-for-macos",
+      MATCHIT: "https://github.com/TypoStudio/matchit"
     };
     const projectLinks = {
-      EINKCLOCK: "https://typostudio.github.io/einkclock/"
+      EINKCLOCK: "https://typostudio.github.io/einkclock/",
+      MATCHIT: "https://typostudio.github.io/matchit/"
     };
 
 
@@ -119,7 +119,7 @@
         const verticalSpacing = 88;
         const verticalPadding = 96;
         const bottomIconArea = 50;
-        const BREAKPOINT = 1150; // Width to switch to vertical
+        const BREAKPOINT = 768; // Width to switch to vertical (mobile only)
 
         const isVertical = window.innerWidth < BREAKPOINT;
         
@@ -129,20 +129,25 @@
 
         if (isVertical) {
             canvasW = frameW + verticalPadding * 2;
-            canvasH = (frameH * 3) + (verticalSpacing * 2) + verticalPadding * 2;
-            canvasWrapper.style.width = canvasW + 'px';
-            canvasWrapper.style.paddingBottom = '0px';
+            canvasH = (frameH * 4) + (verticalSpacing * 3) + verticalPadding * 2;
         } else {
-            canvasW = (frameW * 3) + (spacing * 2) + padding * 2;
+            canvasW = (frameW * 4) + (spacing * 3) + padding * 2;
             canvasH = frameH + padding * 2 + bottomIconArea;
-            canvasWrapper.style.width = canvasW + 'px';
-            canvasWrapper.style.paddingBottom = '0px';
         }
-        
+
+        // Scale display size down to fit viewport (internal resolution stays full)
+        const availW = window.innerWidth - 40;
+        const fitScale = canvasW > availW ? availW / canvasW : 1;
+        const displayW = canvasW * fitScale;
+        const displayH = canvasH * fitScale;
+
+        canvasWrapper.style.width = displayW + 'px';
+        canvasWrapper.style.paddingBottom = '0px';
+
         canvas.width = canvasW * dpr;
         canvas.height = canvasH * dpr;
-        canvas.style.width = canvasW + 'px';
-        canvas.style.height = canvasH + 'px';
+        canvas.style.width = displayW + 'px';
+        canvas.style.height = displayH + 'px';
         ctx.resetTransform();
         ctx.scale(dpr, dpr);
         
@@ -150,15 +155,19 @@
         if (isVertical) {
             initFrame(verticalPadding, verticalPadding, "EINKCLOCK", true);
             initFrame(verticalPadding, verticalPadding + frameH + verticalSpacing, "TRIPBALL", true);
-            initFrame(verticalPadding, verticalPadding + (frameH + verticalSpacing) * 2, "SSHTUNNELMANAGER", true);
+            initFrame(verticalPadding, verticalPadding + (frameH + verticalSpacing) * 2, "MATCHIT", true);
+            initFrame(verticalPadding, verticalPadding + (frameH + verticalSpacing) * 3, "SSHTUNNELMANAGER", true);
             registerGithubIcon(verticalPadding + frameW / 2, verticalPadding + frameH + verticalSpacing / 2, "EINKCLOCK");
-            registerGithubIcon(verticalPadding + frameW / 2, verticalPadding + (frameH + verticalSpacing) * 2 + frameH + verticalSpacing / 2, "SSHTUNNELMANAGER");
+            registerGithubIcon(verticalPadding + frameW / 2, verticalPadding + (frameH + verticalSpacing) * 2 + frameH + verticalSpacing / 2, "MATCHIT");
+            registerGithubIcon(verticalPadding + frameW / 2, verticalPadding + (frameH + verticalSpacing) * 3 + frameH + verticalSpacing / 2, "SSHTUNNELMANAGER");
         } else {
             initFrame(padding, padding, "EINKCLOCK", true);
             initFrame(padding + frameW + spacing, padding, "TRIPBALL", true);
-            initFrame(padding + (frameW + spacing) * 2, padding, "SSHTUNNELMANAGER", true);
+            initFrame(padding + (frameW + spacing) * 2, padding, "MATCHIT", true);
+            initFrame(padding + (frameW + spacing) * 3, padding, "SSHTUNNELMANAGER", true);
             registerGithubIcon(padding + frameW / 2, padding + frameH + 28, "EINKCLOCK");
-            registerGithubIcon(padding + (frameW + spacing) * 2 + frameW / 2, padding + frameH + 28, "SSHTUNNELMANAGER");
+            registerGithubIcon(padding + (frameW + spacing) * 2 + frameW / 2, padding + frameH + 28, "MATCHIT");
+            registerGithubIcon(padding + (frameW + spacing) * 3 + frameW / 2, padding + frameH + 28, "SSHTUNNELMANAGER");
         }
 
         // --- Run Animation Loop ---
@@ -238,6 +247,9 @@
           } else if (text === "TRIPBALL") {
             if (i < 4) { targetX = innerX + (innerW / 5) * (i + 1); targetY = innerY + innerH * 0.35; }
             else { targetX = innerX + (innerW / 5) * (i - 4 + 1); targetY = innerY + innerH * 0.65; }
+          } else if (text === "MATCHIT") {
+            if (i < 5) { targetX = innerX + (innerW / 6) * (i + 1); targetY = innerY + innerH * 0.35; }
+            else { targetX = innerX + (innerW / 3) * (i - 5 + 1); targetY = innerY + innerH * 0.65; }
           } else if (text === "SSHTUNNELMANAGER") {
             if (i < 3) { targetX = innerX + (innerW / 4) * (i + 1); targetY = innerY + innerH * 0.25; }
             else if (i < 9) { targetX = innerX + (innerW / 7) * (i - 3 + 1); targetY = innerY + innerH * 0.5; }
@@ -283,7 +295,7 @@
       frames.forEach((frame, idx) => {
         frame.drawStatic();
         const isHovered = mouse.x >= frame.fx && mouse.x <= frame.fx + frameW && mouse.y >= frame.fy && mouse.y <= frame.fy + frameH;
-        if (isHovered && (frame.text === "EINKCLOCK" || frame.text === "SSHTUNNELMANAGER")) { cursorToSet = 'pointer'; }
+        if (isHovered && (frame.text === "EINKCLOCK" || frame.text === "SSHTUNNELMANAGER" || frame.text === "MATCHIT")) { cursorToSet = 'pointer'; }
 
         if (isHovered && !frame.wasHovered) {
           frame.mode = (frame.mode + 1) % 2;
