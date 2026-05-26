@@ -116,24 +116,22 @@
         const letterMargin = 12;
         const spacing = 40;
         const padding = 60;
-        const verticalSpacing = 88;
-        const verticalPadding = 96;
+        const rowGap = 88;       // 행 사이 간격 (github 아이콘 영역 포함)
         const bottomIconArea = 50;
-        const BREAKPOINT = 768; // Width to switch to vertical (mobile only)
+        // 512 이하 1열, 1024 이하 2열, 초과 4열
 
-        const isVertical = window.innerWidth < BREAKPOINT;
-        
-        // --- Canvas and Icon Sizing ---
-        let canvasW, canvasH;
+        // --- Grid Layout ---
+        const cols = window.innerWidth <= 512 ? 1 : window.innerWidth <= 1024 ? 2 : 4;
+        const layout = ["EINKCLOCK", "TRIPBALL", "MATCHIT", "SSHTUNNELMANAGER"];
+        const iconKeys = ["EINKCLOCK", "MATCHIT", "SSHTUNNELMANAGER"];
+        const rows = Math.ceil(layout.length / cols);
+        const cellX = i => padding + (i % cols) * (frameW + spacing);
+        const cellY = i => padding + Math.floor(i / cols) * (frameH + rowGap);
+
+        // --- Canvas Sizing ---
         const canvasWrapper = canvas.parentElement;
-
-        if (isVertical) {
-            canvasW = frameW + verticalPadding * 2;
-            canvasH = (frameH * 4) + (verticalSpacing * 3) + verticalPadding * 2;
-        } else {
-            canvasW = (frameW * 4) + (spacing * 3) + padding * 2;
-            canvasH = frameH + padding * 2 + bottomIconArea;
-        }
+        const canvasW = frameW * cols + spacing * (cols - 1) + padding * 2;
+        const canvasH = padding * 2 + frameH * rows + rowGap * (rows - 1) + bottomIconArea;
 
         // Scale display size down to fit viewport (internal resolution stays full)
         const availW = window.innerWidth - 40;
@@ -152,23 +150,11 @@
         ctx.scale(dpr, dpr);
         
         // --- Initialize Frames ---
-        if (isVertical) {
-            initFrame(verticalPadding, verticalPadding, "EINKCLOCK", true);
-            initFrame(verticalPadding, verticalPadding + frameH + verticalSpacing, "TRIPBALL", true);
-            initFrame(verticalPadding, verticalPadding + (frameH + verticalSpacing) * 2, "MATCHIT", true);
-            initFrame(verticalPadding, verticalPadding + (frameH + verticalSpacing) * 3, "SSHTUNNELMANAGER", true);
-            registerGithubIcon(verticalPadding + frameW / 2, verticalPadding + frameH + verticalSpacing / 2, "EINKCLOCK");
-            registerGithubIcon(verticalPadding + frameW / 2, verticalPadding + (frameH + verticalSpacing) * 2 + frameH + verticalSpacing / 2, "MATCHIT");
-            registerGithubIcon(verticalPadding + frameW / 2, verticalPadding + (frameH + verticalSpacing) * 3 + frameH + verticalSpacing / 2, "SSHTUNNELMANAGER");
-        } else {
-            initFrame(padding, padding, "EINKCLOCK", true);
-            initFrame(padding + frameW + spacing, padding, "TRIPBALL", true);
-            initFrame(padding + (frameW + spacing) * 2, padding, "MATCHIT", true);
-            initFrame(padding + (frameW + spacing) * 3, padding, "SSHTUNNELMANAGER", true);
-            registerGithubIcon(padding + frameW / 2, padding + frameH + 28, "EINKCLOCK");
-            registerGithubIcon(padding + (frameW + spacing) * 2 + frameW / 2, padding + frameH + 28, "MATCHIT");
-            registerGithubIcon(padding + (frameW + spacing) * 3 + frameW / 2, padding + frameH + 28, "SSHTUNNELMANAGER");
-        }
+        layout.forEach((text, i) => initFrame(cellX(i), cellY(i), text, true));
+        iconKeys.forEach(key => {
+          const i = layout.indexOf(key);
+          registerGithubIcon(cellX(i) + frameW / 2, cellY(i) + frameH + 28, key);
+        });
 
         // --- Run Animation Loop ---
         animate(canvasW, canvasH);
