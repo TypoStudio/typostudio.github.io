@@ -5,15 +5,18 @@
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-B2XZ82PZVR"></script>
   <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
+    window.dataLayer = window.dataLayer || []
+    function gtag() { dataLayer.push(arguments) }
+    gtag('js', new Date())
 
     gtag('config', 'G-B2XZ82PZVR');
   </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="google-site-verification" content="KDNq4waLc6J8OY4zjitT7h3_gDvw21oO0Ud8p4fwc4A" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
   <title>TypoStudio</title>
   <style>
     * {
@@ -56,6 +59,87 @@
       font-size: 0.9em;
     }
 
+    .theme-toggle {
+      margin-top: 16px;
+      padding: 8px 16px;
+      font-family: inherit;
+      font-size: 0.9em;
+      cursor: pointer;
+    }
+
+    .bmc-link {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 6px 18px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.6rem;
+      color: var(--pixel-color);
+      text-decoration: none;
+      background: var(--lcd-bg);
+      border: var(--pixel-size) solid var(--pixel-color);
+      text-shadow: 3px 3px 3px rgba(83, 83, 83, 0.25);
+      box-shadow: 4px 4px 1px rgba(92, 67, 8, 0.35);
+    }
+
+    .bmc-link:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 1px rgba(92, 67, 8, 0.35);
+    }
+
+    /* 픽셀 폰트에는 이모지 글리프가 없어 작게 보이므로 별도 폰트로 키운다 */
+    .bmc-emoji {
+      font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+      font-size: 1.8em;
+      vertical-align: middle;
+      text-shadow: none;
+    }
+
+    /* 8비트 LCD 픽셀 테마 (하단 버튼으로 body.pixel-theme 토글) — 액자(canvas)는 영향 없음 */
+    :root {
+      --lcd-bg: #c9c9c9;        /* 하단 하드웨어 배경 패널 색상 (회색) */
+      --pixel-color: #65676a;   /* 픽셀 소자 자체의 색상 */
+      --pixel-size: 4px;        /* 물리적 도트 최소 단위 */
+    }
+
+    body.pixel-theme {
+      background-color: var(--lcd-bg);
+      background-image:
+        linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    body.pixel-theme h3,
+    body.pixel-theme footer,
+    body.pixel-theme .theme-toggle {
+      font-family: 'Press Start 2P', monospace;
+      color: var(--pixel-color);
+      image-rendering: pixelated;
+      /* 픽셀 도트가 배경에 드리우는 그림자 */
+      text-shadow: 3px 3px 3px rgba(83, 83, 83, 0.25);
+    }
+
+    body.pixel-theme h3 {
+      font-size: 1.4rem;
+    }
+
+    body.pixel-theme footer {
+      font-size: 0.6rem;
+      line-height: 1.8;
+    }
+
+    body.pixel-theme .theme-toggle {
+      background: var(--lcd-bg);
+      border: var(--pixel-size) solid var(--pixel-color);
+      padding: 12px 18px;
+      box-shadow: 4px 4px 1px rgba(92, 67, 8, 0.35);
+    }
+
+    body.pixel-theme .theme-toggle:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 1px rgba(92, 67, 8, 0.35);
+    }
+
     /* Responsive styles */
     @media (max-width: 1100px) {
       body {
@@ -82,182 +166,202 @@
   </style>
 </head>
 
-<body class="body-layout">
+<body class="body-layout pixel-theme">
   <div class="header">
     <h3>TypoStudio</h3>
-  </div >
+  </div>
   <div class="frame-container" style="position: relative; width: 1100px; margin: 0 auto; padding-bottom: 50px;">
     <canvas id="canvas"></canvas>
-  </div >
+  </div>
   <script>
     // --- Global State ---
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const frames = [];
-    const githubIcons = [];
-    let mouse = { x: -1000, y: -1000 };
-    let animationFrameId = null;
-    const fonts = ["serif", "sans-serif", "monospace", "cursive", "fantasy"];
-    const GITHUB_ICON_PATH = new Path2D("M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z");
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+    const frames = []
+    const githubIcons = []
+    let mouse = { x: -1000, y: -1000 }
+    let animationFrameId = null
+    // 마우스(hover 가능한 입력장치)가 하나라도 있으면 true. 터치스크린 데스크톱/노트북에서도
+    // 마우스오버가 켜지도록 (hover: hover)가 아닌 (any-hover: hover) 사용.
+    const supportsHover = window.matchMedia('(any-hover: hover)').matches
+    // 터치 기기에서 현재 글자가 모여있는(활성) 액자
+    let activeFrameText = null
+    const fonts = ["serif", "sans-serif", "monospace", "cursive", "fantasy"]
+    const GITHUB_ICON_PATH = new Path2D("M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z")
     const githubLinks = {
       EINKCLOCK: "https://github.com/TypoStudio/einkclock",
       SSHTUNNELMANAGER: "https://github.com/TypoStudio/ssh-tunnel-for-macos",
       MATCHIT: "https://github.com/TypoStudio/matchit"
-    };
+    }
     const projectLinks = {
       EINKCLOCK: "https://typostudio.github.io/einkclock/",
       MATCHIT: "https://typostudio.github.io/matchit/"
-    };
+    }
 
 
     // --- Main Setup and Drawing Function ---
-    function setupAndDraw() {
-        if (animationFrameId) {
-            cancelAnimationFrame(animationFrameId);
-        }
-        frames.length = 0; // Clear frames for redraw
-        githubIcons.length = 0;
+    function setupAndDraw()
+    {
+      if (animationFrameId)
+      {
+        cancelAnimationFrame(animationFrameId)
+      }
+      frames.length = 0 // Clear frames for redraw
+      githubIcons.length = 0
 
-        // --- Layout Constants ---
-        const dpr = window.devicePixelRatio || 1;
-        const frameW = 300;
-        const frameH = 400;
-        const border = 18;
-        const letterMargin = 12;
-        const spacing = 40;
-        const padding = 60;
-        const rowGap = 88;       // 행 사이 간격 (github 아이콘 영역 포함)
-        const bottomIconArea = 50;
-        // 512 이하 1열, 1024 이하 2열, 초과 4열
+      // --- Layout Constants ---
+      const dpr = window.devicePixelRatio || 1
+      const frameW = 300
+      const frameH = 400
+      const border = 18
+      const letterMargin = 12
+      const spacing = 40
+      const padding = 60
+      const rowGap = 88       // 행 사이 간격 (github 아이콘 영역 포함)
+      const bottomIconArea = 50
+      // 512 이하 1열, 1024 이하 2열, 초과 4열
 
-        // --- Grid Layout ---
-        const cols = window.innerWidth <= 512 ? 1 : window.innerWidth <= 1024 ? 2 : 4;
-        const layout = ["EINKCLOCK", "TRIPBALL", "MATCHIT", "SSHTUNNELMANAGER"];
-        const iconKeys = ["EINKCLOCK", "MATCHIT", "SSHTUNNELMANAGER"];
-        const rows = Math.ceil(layout.length / cols);
-        const cellX = i => padding + (i % cols) * (frameW + spacing);
-        const cellY = i => padding + Math.floor(i / cols) * (frameH + rowGap);
+      // --- Grid Layout ---
+      const viewportW = document.documentElement.clientWidth
+      const cols = viewportW <= 512 ? 1 : viewportW <= 1024 ? 2 : 4
+      const layout = ["EINKCLOCK", "TRIPBALL", "MATCHIT", "SSHTUNNELMANAGER"]
+      const iconKeys = ["EINKCLOCK", "MATCHIT", "SSHTUNNELMANAGER"]
+      const rows = Math.ceil(layout.length / cols)
+      const cellX = i => padding + (i % cols) * (frameW + spacing)
+      const cellY = i => padding + Math.floor(i / cols) * (frameH + rowGap)
 
-        // --- Canvas Sizing ---
-        const canvasWrapper = canvas.parentElement;
-        const canvasW = frameW * cols + spacing * (cols - 1) + padding * 2;
-        const canvasH = padding * 2 + frameH * rows + rowGap * (rows - 1) + bottomIconArea;
+      // --- Canvas Sizing ---
+      const canvasWrapper = canvas.parentElement
+      const canvasW = frameW * cols + spacing * (cols - 1) + padding * 2
+      const canvasH = padding * 2 + frameH * rows + rowGap * (rows - 1) + bottomIconArea
 
-        // Scale display size down to fit viewport (internal resolution stays full)
-        const availW = window.innerWidth - 40;
-        const fitScale = canvasW > availW ? availW / canvasW : 1;
-        const displayW = canvasW * fitScale;
-        const displayH = canvasH * fitScale;
+      // Scale display size down to fit viewport (internal resolution stays full)
+      const availW = viewportW - 40
+      const fitScale = canvasW > availW ? availW / canvasW : 1
+      const displayW = canvasW * fitScale
+      const displayH = canvasH * fitScale
 
-        canvasWrapper.style.width = displayW + 'px';
-        canvasWrapper.style.paddingBottom = '0px';
+      canvasWrapper.style.width = displayW + 'px'
+      canvasWrapper.style.paddingBottom = '0px'
 
-        canvas.width = canvasW * dpr;
-        canvas.height = canvasH * dpr;
-        canvas.style.width = displayW + 'px';
-        canvas.style.height = displayH + 'px';
-        ctx.resetTransform();
-        ctx.scale(dpr, dpr);
-        
-        // --- Initialize Frames ---
-        layout.forEach((text, i) => initFrame(cellX(i), cellY(i), text, true));
-        iconKeys.forEach(key => {
-          const i = layout.indexOf(key);
-          registerGithubIcon(cellX(i) + frameW / 2, cellY(i) + frameH + 28, key);
-        });
+      canvas.width = canvasW * dpr
+      canvas.height = canvasH * dpr
+      canvas.style.width = displayW + 'px'
+      canvas.style.height = displayH + 'px'
+      ctx.resetTransform()
+      ctx.scale(dpr, dpr)
 
-        // --- Run Animation Loop ---
-        animate(canvasW, canvasH);
+      // --- Initialize Frames ---
+      layout.forEach((text, i) => initFrame(cellX(i), cellY(i), text, true))
+      iconKeys.forEach(key =>
+      {
+        const i = layout.indexOf(key)
+        registerGithubIcon(cellX(i) + frameW / 2, cellY(i) + frameH + 28, key)
+      })
+
+      // --- Run Animation Loop ---
+      animate(canvasW, canvasH)
     }
-    
+
     function initFrame(fx, fy, text, isInteractive = false)
     {
-      const frameW = 300, frameH = 400, border = 18, letterMargin = 12;
-      const frame = { fx, fy, text, letters: [], isHovered: false, wasHovered: false, hoverStartTime: 0, mode: 0 };
+      const frameW = 300, frameH = 400, border = 18, letterMargin = 12
+      const frame = { fx, fy, text, letters: [], isHovered: false, wasHovered: false, hoverStartTime: 0, mode: 0 }
 
       frame.drawStatic = () =>
       {
         ctx.save()
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.18)'; ctx.shadowBlur = 30;
-        ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 6;
-        ctx.fillStyle = '#f0f0f0'; ctx.fillRect(fx, fy, frameW, frameH);
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.18)'; ctx.shadowBlur = 30
+        ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 6
+        ctx.fillStyle = '#f0f0f0'; ctx.fillRect(fx, fy, frameW, frameH)
         ctx.restore()
-        ctx.fillStyle = '#f0f0f0'; ctx.fillRect(fx, fy, frameW, frameH);
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)'; ctx.lineWidth = 1;
-        ctx.strokeRect(fx + 0.5, fy + 0.5, frameW - 1, frameH - 1);
-        ctx.fillStyle = '#ffffff'; ctx.fillRect(fx + border, fy + border, frameW - border * 2, frameH - border * 2);
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.04)'; ctx.lineWidth = 0.5;
-        ctx.strokeRect(fx + border, fy + border, frameW - border * 2, frameH - border * 2);
+        ctx.fillStyle = '#f0f0f0'; ctx.fillRect(fx, fy, frameW, frameH)
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)'; ctx.lineWidth = 1
+        ctx.strokeRect(fx + 0.5, fy + 0.5, frameW - 1, frameH - 1)
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(fx + border, fy + border, frameW - border * 2, frameH - border * 2)
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.04)'; ctx.lineWidth = 0.5
+        ctx.strokeRect(fx + border, fy + border, frameW - border * 2, frameH - border * 2)
       }
 
-      if (!text) { frames.push(frame); return; }
+      if (!text) { frames.push(frame); return }
 
-      const rawLetters = text.split("").map(l => Math.random() > 0.5 ? l.toUpperCase() : l.toLowerCase());
-      const innerX = fx + border, innerY = fy + border;
-      const innerW = frameW - border * 2, innerH = frameH - border * 2;
-      const placed = [], verticalSegment = innerH / rawLetters.length;
-      const extraBigIndex = Math.floor(Math.random() * rawLetters.length);
-      const bigIndices = [];
-      while (bigIndices.length < 2 && rawLetters.length > 3) {
-        const r = Math.floor(Math.random() * rawLetters.length);
-        if (r !== extraBigIndex && !bigIndices.includes(r)) bigIndices.push(r);
+      const rawLetters = text.split("").map(l => Math.random() > 0.5 ? l.toUpperCase() : l.toLowerCase())
+      const innerX = fx + border, innerY = fy + border
+      const innerW = frameW - border * 2, innerH = frameH - border * 2
+      const placed = [], verticalSegment = innerH / rawLetters.length
+      const extraBigIndex = Math.floor(Math.random() * rawLetters.length)
+      const bigIndices = []
+      while (bigIndices.length < 2 && rawLetters.length > 3)
+      {
+        const r = Math.floor(Math.random() * rawLetters.length)
+        if (r !== extraBigIndex && !bigIndices.includes(r)) bigIndices.push(r)
       }
 
-      rawLetters.forEach((char, i) => {
-        let fontSize = Math.floor(Math.random() * (verticalSegment * 0.5)) + 30;
-        if (i === extraBigIndex) fontSize *= 3.5; else if (bigIndices.includes(i)) fontSize *= 2.0;
+      rawLetters.forEach((char, i) =>
+      {
+        let fontSize = Math.floor(Math.random() * (verticalSegment * 0.5)) + 30
+        if (i === extraBigIndex) fontSize *= 3.5; else if (bigIndices.includes(i)) fontSize *= 2.0
 
-        const font = fonts[Math.floor(Math.random() * fonts.length)], radius = fontSize * 0.45;
-        const segmentTop = innerY + (i * verticalSegment);
-        let baseX, baseY, baseAngle, found = false, bestX, bestY, minOverlap = Infinity;
+        const font = fonts[Math.floor(Math.random() * fonts.length)], radius = fontSize * 0.45
+        const segmentTop = innerY + (i * verticalSegment)
+        let baseX, baseY, baseAngle, found = false, bestX, bestY, minOverlap = Infinity
 
-        for (let attempt = 0; attempt < 300; attempt++) {
-          let tx = innerX + radius + Math.random() * (innerW - radius * 2);
-          let ty = segmentTop + radius + Math.random() * (verticalSegment - radius * 2);
-          tx = Math.max(innerX + radius + letterMargin, Math.min(tx, innerX + innerW - radius - letterMargin));
-          ty = Math.max(innerY + radius + letterMargin, Math.min(ty, innerY + innerH - radius - letterMargin));
-          let maxOverlap = 0, overlapCount = 0;
-          for (const other of placed) {
-            const dist = Math.sqrt((tx - other.x) ** 2 + (ty - other.y) ** 2);
-            const overlap = (radius + other.radius) - dist;
-            if (overlap > 0) { overlapCount++; maxOverlap = Math.max(maxOverlap, overlap); }
+        for (let attempt = 0; attempt < 300; attempt++)
+        {
+          let tx = innerX + radius + Math.random() * (innerW - radius * 2)
+          let ty = segmentTop + radius + Math.random() * (verticalSegment - radius * 2)
+          tx = Math.max(innerX + radius + letterMargin, Math.min(tx, innerX + innerW - radius - letterMargin))
+          ty = Math.max(innerY + radius + letterMargin, Math.min(ty, innerY + innerH - radius - letterMargin))
+          let maxOverlap = 0, overlapCount = 0
+          for (const other of placed)
+          {
+            const dist = Math.sqrt((tx - other.x) ** 2 + (ty - other.y) ** 2)
+            const overlap = (radius + other.radius) - dist
+            if (overlap > 0) { overlapCount++; maxOverlap = Math.max(maxOverlap, overlap) }
           }
-          if (overlapCount === 0) { baseX = tx; baseY = ty; found = true; break; }
-          if (maxOverlap < minOverlap) { minOverlap = maxOverlap; bestX = tx; bestY = ty; }
+          if (overlapCount === 0) { baseX = tx; baseY = ty; found = true; break }
+          if (maxOverlap < minOverlap) { minOverlap = maxOverlap; bestX = tx; bestY = ty }
         }
-        if (!found) { baseX = bestX; baseY = bestY; }
-        placed.push({ x: baseX, y: baseY, radius });
+        if (!found) { baseX = bestX; baseY = bestY }
+        placed.push({ x: baseX, y: baseY, radius })
 
-        if (i === 0) baseAngle = 0;
-        else {
-          const confusingChars = "nupdbqIl1NZ690oO";
-          if (confusingChars.includes(char)) baseAngle = (Math.random() > 0.5) ? 0 : Math.PI / 2;
-          else baseAngle = [0, Math.PI / 2, Math.PI, Math.PI * .5][Math.floor(Math.random() * 4)];
+        if (i === 0) baseAngle = 0
+        else
+        {
+          const confusingChars = "nupdbqIl1NZ690oO"
+          if (confusingChars.includes(char)) baseAngle = (Math.random() > 0.5) ? 0 : Math.PI / 2
+          else baseAngle = [0, Math.PI / 2, Math.PI, Math.PI * .5][Math.floor(Math.random() * 4)]
         }
 
-        let targetX = baseX, targetY = baseY;
-        if (isInteractive) {
-          if (text === "EINKCLOCK") {
-            if (i < 4) { targetX = innerX + (innerW / 5) * (i + 1); targetY = innerY + innerH * 0.35; }
-            else { targetX = innerX + (innerW / 6) * (i - 4 + 1); targetY = innerY + innerH * 0.65; }
-          } else if (text === "TRIPBALL") {
-            if (i < 4) { targetX = innerX + (innerW / 5) * (i + 1); targetY = innerY + innerH * 0.35; }
-            else { targetX = innerX + (innerW / 5) * (i - 4 + 1); targetY = innerY + innerH * 0.65; }
-          } else if (text === "MATCHIT") {
-            if (i < 5) { targetX = innerX + (innerW / 6) * (i + 1); targetY = innerY + innerH * 0.35; }
-            else { targetX = innerX + (innerW / 3) * (i - 5 + 1); targetY = innerY + innerH * 0.65; }
-          } else if (text === "SSHTUNNELMANAGER") {
-            if (i < 3) { targetX = innerX + (innerW / 4) * (i + 1); targetY = innerY + innerH * 0.25; }
-            else if (i < 9) { targetX = innerX + (innerW / 7) * (i - 3 + 1); targetY = innerY + innerH * 0.5; }
-            else { targetX = innerX + (innerW / 8) * (i - 9 + 1); targetY = innerY + innerH * 0.75; }
+        let targetX = baseX, targetY = baseY
+        if (isInteractive)
+        {
+          if (text === "EINKCLOCK")
+          {
+            if (i < 4) { targetX = innerX + (innerW / 5) * (i + 1); targetY = innerY + innerH * 0.35 }
+            else { targetX = innerX + (innerW / 6) * (i - 4 + 1); targetY = innerY + innerH * 0.65 }
+          } else if (text === "TRIPBALL")
+          {
+            if (i < 4) { targetX = innerX + (innerW / 5) * (i + 1); targetY = innerY + innerH * 0.35 }
+            else { targetX = innerX + (innerW / 5) * (i - 4 + 1); targetY = innerY + innerH * 0.65 }
+          } else if (text === "MATCHIT")
+          {
+            if (i < 5) { targetX = innerX + (innerW / 6) * (i + 1); targetY = innerY + innerH * 0.35 }
+            else { targetX = innerX + (innerW / 3) * (i - 5 + 1); targetY = innerY + innerH * 0.65 }
+          } else if (text === "SSHTUNNELMANAGER")
+          {
+            if (i < 3) { targetX = innerX + (innerW / 4) * (i + 1); targetY = innerY + innerH * 0.25 }
+            else if (i < 9) { targetX = innerX + (innerW / 7) * (i - 3 + 1); targetY = innerY + innerH * 0.5 }
+            else { targetX = innerX + (innerW / 8) * (i - 9 + 1); targetY = innerY + innerH * 0.75 }
           }
         }
-        frame.letters.push({ char, baseX, baseY, baseAngle, targetX, targetY, targetAngle: 0, currX: baseX, currY: baseY, currAngle: baseAngle, fontSize, font, index: i });
-      });
-      frames.push(frame);
+        frame.letters.push({ char, baseX, baseY, baseAngle, targetX, targetY, targetAngle: 0, currX: baseX, currY: baseY, currAngle: baseAngle, fontSize, font, index: i })
+      })
+      frames.push(frame)
     }
 
-    function registerGithubIcon(x, y, projectKey) {
+    function registerGithubIcon(x, y, projectKey)
+    {
       githubIcons.push({
         x,
         y,
@@ -265,183 +369,242 @@
         radius: 16,
         projectKey,
         href: githubLinks[projectKey]
-      });
+      })
     }
 
-    function getHoveredGithubIcon(x, y) {
-      return githubIcons.find(icon => Math.hypot(x - icon.x, y - icon.y) <= icon.radius) || null;
+    function getHoveredGithubIcon(x, y)
+    {
+      return githubIcons.find(icon => Math.hypot(x - icon.x, y - icon.y) <= icon.radius) || null
     }
 
-    function drawGithubIcon(icon, isHovered) {
-      ctx.save();
-      ctx.translate(icon.x - icon.size / 2, icon.y - icon.size / 2);
-      ctx.scale(icon.size / 16, icon.size / 16);
-      ctx.fillStyle = isHovered ? '#000000' : '#555555';
-      ctx.fill(GITHUB_ICON_PATH);
-      ctx.restore();
+    function drawGithubIcon(icon, isHovered)
+    {
+      ctx.save()
+      ctx.translate(icon.x - icon.size / 2, icon.y - icon.size / 2)
+      ctx.scale(icon.size / 16, icon.size / 16)
+      ctx.fillStyle = isHovered ? '#000000' : '#555555'
+      ctx.fill(GITHUB_ICON_PATH)
+      ctx.restore()
     }
 
-    function animate(canvasW, canvasH) {
-      const frameW = 300, frameH = 400, border = 18, letterMargin = 12;
-      const now = Date.now();
-      ctx.clearRect(0, 0, canvasW, canvasH);
-      let cursorToSet = 'default';
-      const hoveredGithubIcon = getHoveredGithubIcon(mouse.x, mouse.y);
+    function animate(canvasW, canvasH)
+    {
+      const frameW = 300, frameH = 400, border = 18, letterMargin = 12
+      const now = Date.now()
+      ctx.clearRect(0, 0, canvasW, canvasH)
+      let cursorToSet = 'default'
+      const hoveredGithubIcon = getHoveredGithubIcon(mouse.x, mouse.y)
 
-      frames.forEach((frame, idx) => {
-        frame.drawStatic();
-        const isHovered = mouse.x >= frame.fx && mouse.x <= frame.fx + frameW && mouse.y >= frame.fy && mouse.y <= frame.fy + frameH;
-        if (isHovered && (frame.text === "EINKCLOCK" || frame.text === "SSHTUNNELMANAGER" || frame.text === "MATCHIT")) { cursorToSet = 'pointer'; }
+      frames.forEach((frame, idx) =>
+      {
+        frame.drawStatic()
+        const isHovered = mouse.x >= frame.fx && mouse.x <= frame.fx + frameW && mouse.y >= frame.fy && mouse.y <= frame.fy + frameH
+        if (isHovered && (frame.text === "EINKCLOCK" || frame.text === "SSHTUNNELMANAGER" || frame.text === "MATCHIT")) { cursorToSet = 'pointer' }
 
-        if (isHovered && !frame.wasHovered) {
-          frame.mode = (frame.mode + 1) % 2;
-          frame.hoverStartTime = now;
-          if (typeof gtag === 'function') {
-            gtag('event', 'frame_hover', { frame: frame.text });
+        if (isHovered && !frame.wasHovered)
+        {
+          frame.mode = (frame.mode + 1) % 2
+          frame.hoverStartTime = now
+          if (typeof gtag === 'function')
+          {
+            gtag('event', 'frame_hover', { frame: frame.text })
           }
         }
-        if (!isHovered && frame.wasHovered) {
-          const innerX = frame.fx + border, innerY = frame.fy + border;
-          const innerW = frameW - border * 2, innerH = frameH - border * 2;
-          const numLetters = frame.letters.length, verticalSegment = innerH / numLetters;
-          const extraBigIndex = Math.floor(Math.random() * numLetters), bigIndices = [];
-          while (bigIndices.length < 2 && numLetters > 3) {
-            const r = Math.floor(Math.random() * numLetters);
-            if (r !== extraBigIndex && !bigIndices.includes(r)) bigIndices.push(r);
+        if (!isHovered && frame.wasHovered)
+        {
+          const innerX = frame.fx + border, innerY = frame.fy + border
+          const innerW = frameW - border * 2, innerH = frameH - border * 2
+          const numLetters = frame.letters.length, verticalSegment = innerH / numLetters
+          const extraBigIndex = Math.floor(Math.random() * numLetters), bigIndices = []
+          while (bigIndices.length < 2 && numLetters > 3)
+          {
+            const r = Math.floor(Math.random() * numLetters)
+            if (r !== extraBigIndex && !bigIndices.includes(r)) bigIndices.push(r)
           }
-          frame.letters.forEach((l, i) => {
-            let fontSize = Math.floor(Math.random() * (verticalSegment * 0.5)) + 30;
-            if (i === extraBigIndex) fontSize *= 3.5; else if (bigIndices.includes(i)) fontSize *= 2.0;
-            l.fontSize = fontSize;
-            l.baseAngle = [0, Math.PI / 2, Math.PI, Math.PI * 1.5][Math.floor(Math.random() * 4)];
-            l.char = Math.random() > 0.5 ? l.char.toUpperCase() : l.char.toLowerCase();
-            l.font = fonts[Math.floor(Math.random() * fonts.length)];
-          });
-          const sortedLetters = [...frame.letters].sort((a, b) => b.fontSize - a.fontSize);
-          const newlyPlaced = [];
-          sortedLetters.forEach(l => {
-            const radius = l.fontSize * 0.45;
-            let baseX, baseY, found = false, bestX, bestY, minOverlap = Infinity;
-            for (let attempt = 0; attempt < 200; attempt++) {
-              let tx = innerX + radius + Math.random() * (innerW - radius * 2);
-              let ty = innerY + radius + Math.random() * (innerH - radius * 2);
-              tx = Math.max(innerX + radius + letterMargin, Math.min(tx, innerX + innerW - radius - letterMargin));
-              ty = Math.max(innerY + radius + letterMargin, Math.min(ty, innerY + innerH - radius - letterMargin));
-              let maxOverlap = 0, overlapCount = 0;
-              for (const other of newlyPlaced) {
-                const dist = Math.sqrt((tx - other.x) ** 2 + (ty - other.y) ** 2);
-                if ((radius + other.radius) - dist > 0) { overlapCount++; maxOverlap = Math.max(maxOverlap, (radius + other.radius) - dist); }
+          frame.letters.forEach((l, i) =>
+          {
+            let fontSize = Math.floor(Math.random() * (verticalSegment * 0.5)) + 30
+            if (i === extraBigIndex) fontSize *= 3.5; else if (bigIndices.includes(i)) fontSize *= 2.0
+            l.fontSize = fontSize
+            l.baseAngle = [0, Math.PI / 2, Math.PI, Math.PI * 1.5][Math.floor(Math.random() * 4)]
+            l.char = Math.random() > 0.5 ? l.char.toUpperCase() : l.char.toLowerCase()
+            l.font = fonts[Math.floor(Math.random() * fonts.length)]
+          })
+          const sortedLetters = [...frame.letters].sort((a, b) => b.fontSize - a.fontSize)
+          const newlyPlaced = []
+          sortedLetters.forEach(l =>
+          {
+            const radius = l.fontSize * 0.45
+            let baseX, baseY, found = false, bestX, bestY, minOverlap = Infinity
+            for (let attempt = 0; attempt < 200; attempt++)
+            {
+              let tx = innerX + radius + Math.random() * (innerW - radius * 2)
+              let ty = innerY + radius + Math.random() * (innerH - radius * 2)
+              tx = Math.max(innerX + radius + letterMargin, Math.min(tx, innerX + innerW - radius - letterMargin))
+              ty = Math.max(innerY + radius + letterMargin, Math.min(ty, innerY + innerH - radius - letterMargin))
+              let maxOverlap = 0, overlapCount = 0
+              for (const other of newlyPlaced)
+              {
+                const dist = Math.sqrt((tx - other.x) ** 2 + (ty - other.y) ** 2)
+                if ((radius + other.radius) - dist > 0) { overlapCount++; maxOverlap = Math.max(maxOverlap, (radius + other.radius) - dist) }
               }
-              if (overlapCount === 0) { baseX = tx; baseY = ty; found = true; break; }
-              if (maxOverlap < minOverlap) { minOverlap = maxOverlap; bestX = tx; bestY = ty; }
+              if (overlapCount === 0) { baseX = tx; baseY = ty; found = true; break }
+              if (maxOverlap < minOverlap) { minOverlap = maxOverlap; bestX = tx; bestY = ty }
             }
-            if (!found) { baseX = bestX; baseY = bestY; }
-            l.baseX = baseX; l.baseY = baseY;
-            newlyPlaced.push({ x: baseX, y: baseY, radius });
-          });
+            if (!found) { baseX = bestX; baseY = bestY }
+            l.baseX = baseX; l.baseY = baseY
+            newlyPlaced.push({ x: baseX, y: baseY, radius })
+          })
         }
-        frame.wasHovered = isHovered;
+        frame.wasHovered = isHovered
 
-        frame.letters.forEach(l => {
-          let tx, ty, ta, alpha = 1;
-          const staggerDelay = 100, elapsed = now - frame.hoverStartTime;
-          if (isHovered) {
-            if (frame.mode === 0) {
-              tx = l.targetX; ty = l.targetY; ta = l.targetAngle; alpha = 1;
-              l.currX += (tx - l.currX) * 0.12; l.currY += (ty - l.currY) * 0.12;
-              let diff = ta - l.currAngle;
-              while (diff > Math.PI) diff -= Math.PI * 2; while (diff < -Math.PI) diff += Math.PI * 2;
-              l.currAngle += diff * 0.12;
-            } else {
-              const targetTime = l.index * staggerDelay;
-              if (elapsed > targetTime) {
-                l.currX = l.targetX; l.currY = l.targetY; l.currAngle = l.targetAngle;
-                alpha = Math.min(1, (elapsed - targetTime) / 200);
-              } else {
-                l.currX = l.baseX; l.currY = l.baseY; l.currAngle = l.baseAngle;
+        frame.letters.forEach(l =>
+        {
+          let tx, ty, ta, alpha = 1
+          const staggerDelay = 100, elapsed = now - frame.hoverStartTime
+          if (isHovered)
+          {
+            if (frame.mode === 0)
+            {
+              tx = l.targetX; ty = l.targetY; ta = l.targetAngle; alpha = 1
+              l.currX += (tx - l.currX) * 0.12; l.currY += (ty - l.currY) * 0.12
+              let diff = ta - l.currAngle
+              while (diff > Math.PI) diff -= Math.PI * 2; while (diff < -Math.PI) diff += Math.PI * 2
+              l.currAngle += diff * 0.12
+            } else
+            {
+              const targetTime = l.index * staggerDelay
+              if (elapsed > targetTime)
+              {
+                l.currX = l.targetX; l.currY = l.targetY; l.currAngle = l.targetAngle
+                alpha = Math.min(1, (elapsed - targetTime) / 200)
+              } else
+              {
+                l.currX = l.baseX; l.currY = l.baseY; l.currAngle = l.baseAngle
               }
             }
-          } else {
-            tx = l.baseX; ty = l.baseY; ta = l.baseAngle; alpha = 1;
-            l.currX += (tx - l.currX) * 0.12; l.currY += (ty - l.currY) * 0.12;
-            let diff = ta - l.currAngle;
-            while (diff > Math.PI) diff -= Math.PI * 2; while (diff < -Math.PI) diff += Math.PI * 2;
-            l.currAngle += diff * 0.12;
+          } else
+          {
+            tx = l.baseX; ty = l.baseY; ta = l.baseAngle; alpha = 1
+            l.currX += (tx - l.currX) * 0.12; l.currY += (ty - l.currY) * 0.12
+            let diff = ta - l.currAngle
+            while (diff > Math.PI) diff -= Math.PI * 2; while (diff < -Math.PI) diff += Math.PI * 2
+            l.currAngle += diff * 0.12
           }
-          if (alpha > 0) {
-            ctx.save();
-            ctx.globalAlpha = alpha;
-            ctx.font = `bold ${l.fontSize}px ${l.font}`;
-            ctx.fillStyle = '#000000';
-            ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
-            ctx.translate(l.currX, l.currY); ctx.rotate(l.currAngle);
-            ctx.fillText(l.char, 0, 0);
-            ctx.restore();
+          if (alpha > 0)
+          {
+            ctx.save()
+            ctx.globalAlpha = alpha
+            ctx.font = `bold ${l.fontSize}px ${l.font}`
+            ctx.fillStyle = '#000000'
+            ctx.textBaseline = 'middle'; ctx.textAlign = 'center'
+            ctx.translate(l.currX, l.currY); ctx.rotate(l.currAngle)
+            ctx.fillText(l.char, 0, 0)
+            ctx.restore()
           }
-        });
-      });
-      githubIcons.forEach(icon => drawGithubIcon(icon, hoveredGithubIcon === icon));
-      if (hoveredGithubIcon) {
-        cursorToSet = 'pointer';
+        })
+      })
+      githubIcons.forEach(icon => drawGithubIcon(icon, hoveredGithubIcon === icon))
+      if (hoveredGithubIcon)
+      {
+        cursorToSet = 'pointer'
       }
-      canvas.style.cursor = cursorToSet;
-      animationFrameId = requestAnimationFrame(() => animate(canvasW, canvasH));
+      canvas.style.cursor = cursorToSet
+      animationFrameId = requestAnimationFrame(() => animate(canvasW, canvasH))
     }
 
     // --- Event Listeners ---
-    canvas.addEventListener('mousemove', (e) => {
-        const rect = canvas.getBoundingClientRect();
-        const canvasCurrentW = canvas.width / (window.devicePixelRatio || 1);
-        const canvasCurrentH = canvas.height / (window.devicePixelRatio || 1);
-        mouse.x = (e.clientX - rect.left) * (canvasCurrentW / rect.width);
-        mouse.y = (e.clientY - rect.top) * (canvasCurrentH / rect.height);
-    });
-    canvas.addEventListener('mouseleave', () => { mouse.x = -1000; mouse.y = -1000; });
-    canvas.addEventListener('click', (e) => {
-      const rect = canvas.getBoundingClientRect();
-      const canvasCurrentW = canvas.width / (window.devicePixelRatio || 1);
-      const canvasCurrentH = canvas.height / (window.devicePixelRatio || 1);
-      const clickX = (e.clientX - rect.left) * (canvasCurrentW / rect.width);
-      const clickY = (e.clientY - rect.top) * (canvasCurrentH / rect.height);
-      const clickedGithubIcon = getHoveredGithubIcon(clickX, clickY);
+    canvas.addEventListener('mousemove', (e) =>
+    {
+      if (!supportsHover) return
+      const rect = canvas.getBoundingClientRect()
+      const canvasCurrentW = canvas.width / (window.devicePixelRatio || 1)
+      const canvasCurrentH = canvas.height / (window.devicePixelRatio || 1)
+      mouse.x = (e.clientX - rect.left) * (canvasCurrentW / rect.width)
+      mouse.y = (e.clientY - rect.top) * (canvasCurrentH / rect.height)
+    })
+    canvas.addEventListener('mouseleave', () => { if (supportsHover) { mouse.x = -1000; mouse.y = -1000 } })
+    canvas.addEventListener('click', (e) =>
+    {
+      const rect = canvas.getBoundingClientRect()
+      const canvasCurrentW = canvas.width / (window.devicePixelRatio || 1)
+      const canvasCurrentH = canvas.height / (window.devicePixelRatio || 1)
+      const clickX = (e.clientX - rect.left) * (canvasCurrentW / rect.width)
+      const clickY = (e.clientY - rect.top) * (canvasCurrentH / rect.height)
+      const clickedGithubIcon = getHoveredGithubIcon(clickX, clickY)
 
-      if (clickedGithubIcon) {
-        if (typeof gtag === 'function') {
+      if (clickedGithubIcon)
+      {
+        if (typeof gtag === 'function')
+        {
           gtag('event', 'link_click', {
             link_type: 'github',
             frame: clickedGithubIcon.projectKey,
             link_url: clickedGithubIcon.href
-          });
+          })
         }
-        window.open(clickedGithubIcon.href, "_blank");
-        return;
+        window.open(clickedGithubIcon.href, "_blank")
+        return
       }
 
-      frames.forEach(frame => {
-        const frameW = 300, frameH = 400;
-        if (clickX >= frame.fx && clickX <= frame.fx + frameW && clickY >= frame.fy && clickY <= frame.fy + frameH) {
-          if (projectLinks[frame.text]) {
-            if (typeof gtag === 'function') {
-              gtag('event', 'link_click', {
-                link_type: 'project',
-                frame: frame.text,
-                link_url: projectLinks[frame.text]
-              });
-            }
-            window.open(projectLinks[frame.text], "_blank");
-          }
+      const frameW = 300, frameH = 400
+      const clickedFrame = frames.find(frame =>
+        clickX >= frame.fx && clickX <= frame.fx + frameW && clickY >= frame.fy && clickY <= frame.fy + frameH)
+
+      // 마우스오버가 없는 터치 기기: 첫 탭은 글자를 모으고, 같은 액자를 다시 탭해야 이동
+      if (!supportsHover)
+      {
+        if (!clickedFrame)
+        {
+          activeFrameText = null
+          mouse.x = -1000; mouse.y = -1000
+          return
         }
-      });
-    });
+        if (activeFrameText !== clickedFrame.text)
+        {
+          activeFrameText = clickedFrame.text
+          mouse.x = clickedFrame.fx + frameW / 2
+          mouse.y = clickedFrame.fy + frameH / 2
+          return
+        }
+      }
+
+      if (clickedFrame && projectLinks[clickedFrame.text])
+      {
+        if (typeof gtag === 'function')
+        {
+          gtag('event', 'link_click', {
+            link_type: 'project',
+            frame: clickedFrame.text,
+            link_url: projectLinks[clickedFrame.text]
+          })
+        }
+        window.open(projectLinks[clickedFrame.text], "_blank")
+      }
+    })
 
     // --- Initial Load and Resize ---
-    window.addEventListener('resize', setupAndDraw);
+    window.addEventListener('resize', setupAndDraw)
     // 모바일 첫 로드 시 viewport(width=device-width) 적용 전 innerWidth가 데스크톱 기본값으로
     // 잡혀 4열로 그려지는 문제 방지: 레이아웃이 확정된 다음 프레임/로드 완료 후 그린다.
-    requestAnimationFrame(setupAndDraw);
+    requestAnimationFrame(setupAndDraw)
     window.addEventListener('load', setupAndDraw);
+    // 타이밍에 의존하지 않도록 실제 레이아웃 폭이 확정/변경될 때마다 다시 그린다.
+    // (첫 로드 시 innerWidth가 잘못 읽혀 가로로 넘치는 문제 해결, 수동 resize 불필요)
+    if (window.ResizeObserver) {
+      let lastW = -1
+      const ro = new ResizeObserver(() => {
+        const w = document.documentElement.clientWidth
+        if (w === lastW) return
+        lastW = w
+        requestAnimationFrame(setupAndDraw)
+      })
+      ro.observe(document.documentElement)
+    }
   </script>
   <footer class="footer-content">
     <p>&copy; 2026 TypoStudio. All rights reserved.</p>
+    <a class="bmc-link" href="https://buymeacoffee.com/typ0s2d10" target="_blank" rel="noopener"
+      onclick="if (typeof gtag === 'function') gtag('event', 'link_click', { link_type: 'coffee', link_url: 'https://buymeacoffee.com/typ0s2d10' })"><span class="bmc-emoji">&#9749;</span> Buy me a coffee</a>
   </footer>
-</body >
+</body>
