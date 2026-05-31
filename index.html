@@ -2,6 +2,15 @@
 <html lang="ko">
 
 <head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-B2XZ82PZVR"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-B2XZ82PZVR');
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="google-site-verification" content="KDNq4waLc6J8OY4zjitT7h3_gDvw21oO0Ud8p4fwc4A" />
@@ -287,6 +296,9 @@
         if (isHovered && !frame.wasHovered) {
           frame.mode = (frame.mode + 1) % 2;
           frame.hoverStartTime = now;
+          if (typeof gtag === 'function') {
+            gtag('event', 'frame_hover', { frame: frame.text });
+          }
         }
         if (!isHovered && frame.wasHovered) {
           const innerX = frame.fx + border, innerY = frame.fy + border;
@@ -394,6 +406,13 @@
       const clickedGithubIcon = getHoveredGithubIcon(clickX, clickY);
 
       if (clickedGithubIcon) {
+        if (typeof gtag === 'function') {
+          gtag('event', 'link_click', {
+            link_type: 'github',
+            frame: clickedGithubIcon.projectKey,
+            link_url: clickedGithubIcon.href
+          });
+        }
         window.open(clickedGithubIcon.href, "_blank");
         return;
       }
@@ -402,6 +421,13 @@
         const frameW = 300, frameH = 400;
         if (clickX >= frame.fx && clickX <= frame.fx + frameW && clickY >= frame.fy && clickY <= frame.fy + frameH) {
           if (projectLinks[frame.text]) {
+            if (typeof gtag === 'function') {
+              gtag('event', 'link_click', {
+                link_type: 'project',
+                frame: frame.text,
+                link_url: projectLinks[frame.text]
+              });
+            }
             window.open(projectLinks[frame.text], "_blank");
           }
         }
@@ -410,7 +436,10 @@
 
     // --- Initial Load and Resize ---
     window.addEventListener('resize', setupAndDraw);
-    setupAndDraw(); // Initial call
+    // 모바일 첫 로드 시 viewport(width=device-width) 적용 전 innerWidth가 데스크톱 기본값으로
+    // 잡혀 4열로 그려지는 문제 방지: 레이아웃이 확정된 다음 프레임/로드 완료 후 그린다.
+    requestAnimationFrame(setupAndDraw);
+    window.addEventListener('load', setupAndDraw);
   </script>
   <footer class="footer-content">
     <p>&copy; 2026 TypoStudio. All rights reserved.</p>
