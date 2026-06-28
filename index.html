@@ -408,7 +408,7 @@
           frame.hoverStartTime = now
           if (typeof gtag === 'function')
           {
-            gtag('event', 'frame_hover', { frame: frameLabel(frame.text) })
+            gtag('event', 'frame_hover', { frame: frameLabel(frame.text), interaction: 'mouseover' })
           }
         }
         if (!isHovered && frame.wasHovered)
@@ -566,6 +566,10 @@
           activeFrameText = clickedFrame.text
           mouse.x = clickedFrame.fx + frameW / 2
           mouse.y = clickedFrame.fy + frameH / 2
+          if (typeof gtag === 'function')
+          {
+            gtag('event', 'frame_hover', { frame: frameLabel(clickedFrame.text), interaction: 'touch' })
+          }
           return
         }
       }
