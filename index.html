@@ -179,6 +179,7 @@
     const ctx = canvas.getContext('2d')
     const frames = []
     const githubIcons = []
+    const wipIcons = []
     let mouse = { x: -1000, y: -1000 }
     let animationFrameId = null
     // 마우스(hover 가능한 입력장치)가 하나라도 있으면 true. 터치스크린 데스크톱/노트북에서도
@@ -189,6 +190,7 @@
     const fonts = ["serif", "sans-serif", "monospace", "cursive", "fantasy"]
     const GITHUB_ICON_PATH = new Path2D("M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z")
     // 액자 정보 단일 소스. text: 액자에 들어가는 글자, link: 프로젝트(데모) 링크, repo: github 저장소.
+    // wip: true면 액자 아래에 공사중 아이콘을 그린다(클릭 대상 아님).
     // 배치 순서, github 아이콘 표시 여부, 링크 동작이 모두 이 배열에서 파생된다.
     // text 안의 줄바꿈(\n)이 액자 안 글자의 줄 구성을 결정한다. 줄별 글자 수와 줄 개수로
     // 위치를 계산하므로(아래 initFrame) 새 항목은 분기 추가 없이 자동 배치된다.
@@ -200,7 +202,7 @@
       { text: "EINK\nCLOCK", link: "https://typostudio.github.io/einkclock/", repo: "https://github.com/TypoStudio/einkclock" },
       { text: "SSH\nTUNNEL\nMANAGER", link: null, repo: "https://github.com/TypoStudio/ssh-tunnel-for-macos" },
       { text: "DOUBLE\nPENDULUM", link: "https://typostudio.github.io/double-pendulum/", repo: "https://github.com/TypoStudio/double-pendulum" },
-      { text: "TRIP\nBALL", link: null, repo: null },
+      { text: "TRIP\nBALL", link: null, repo: null, wip: true },
     ]
     const frameByText = Object.fromEntries(framesData.map(f => [f.text, f]))
     // GA 이벤트/식별용 라벨: 줄바꿈 제거한 순수 이름
@@ -216,6 +218,7 @@
       }
       frames.length = 0 // Clear frames for redraw
       githubIcons.length = 0
+      wipIcons.length = 0
 
       // --- Layout Constants ---
       const dpr = window.devicePixelRatio || 1
@@ -234,6 +237,7 @@
       const cols = viewportW <= 512 ? 1 : viewportW <= 1024 ? 2 : 4
       const layout = framesData.map(f => f.text)
       const iconKeys = framesData.filter(f => f.repo).map(f => f.text)
+      const wipKeys = framesData.filter(f => f.wip).map(f => f.text)
       const rows = Math.ceil(layout.length / cols)
       const cellX = i => padding + (i % cols) * (frameW + spacing)
       const cellY = i => padding + Math.floor(i / cols) * (frameH + rowGap)
@@ -265,6 +269,11 @@
       {
         const i = layout.indexOf(key)
         registerGithubIcon(cellX(i) + frameW / 2, cellY(i) + frameH + 28, key)
+      })
+      wipKeys.forEach(key =>
+      {
+        const i = layout.indexOf(key)
+        wipIcons.push({ x: cellX(i) + frameW / 2, y: cellY(i) + frameH + 28 })
       })
 
       // --- Run Animation Loop ---
@@ -390,6 +399,27 @@
       ctx.restore()
     }
 
+    // 공사중 표시용 바리케이드 아이콘. github 아이콘과 같은 색/자리에 그리되 상호작용은 없다.
+    function drawWipIcon(x, y)
+    {
+      const w = 28, h = 16
+      ctx.save()
+      ctx.translate(x - w / 2, y - h / 2)
+      ctx.strokeStyle = '#555555'; ctx.lineWidth = 1.5
+      ctx.beginPath()
+      ctx.moveTo(4.5, 8); ctx.lineTo(4.5, h)
+      ctx.moveTo(w - 4.5, 8); ctx.lineTo(w - 4.5, h)
+      ctx.stroke()
+      ctx.beginPath(); ctx.rect(0.75, 0.75, w - 1.5, 8); ctx.stroke()
+      ctx.save()
+      ctx.beginPath(); ctx.rect(0.75, 0.75, w - 1.5, 8); ctx.clip()
+      ctx.beginPath()
+      for (let i = -8; i < w; i += 6) { ctx.moveTo(i, 9); ctx.lineTo(i + 8, 0) }
+      ctx.stroke()
+      ctx.restore()
+      ctx.restore()
+    }
+
     function animate(canvasW, canvasH)
     {
       const frameW = 300, frameH = 400, border = 18, letterMargin = 12
@@ -509,6 +539,7 @@
         })
       })
       githubIcons.forEach(icon => drawGithubIcon(icon, hoveredGithubIcon === icon))
+      wipIcons.forEach(icon => drawWipIcon(icon.x, icon.y))
       if (hoveredGithubIcon)
       {
         cursorToSet = 'pointer'
