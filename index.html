@@ -67,33 +67,6 @@
       cursor: pointer;
     }
 
-    .bmc-link {
-      display: inline-block;
-      margin-top: 20px;
-      padding: 6px 18px;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 0.6rem;
-      color: var(--pixel-color);
-      text-decoration: none;
-      background: var(--lcd-bg);
-      border: var(--pixel-size) solid var(--pixel-color);
-      text-shadow: 3px 3px 3px rgba(83, 83, 83, 0.25);
-      box-shadow: 4px 4px 1px rgba(92, 67, 8, 0.35);
-    }
-
-    .bmc-link:active {
-      transform: translate(2px, 2px);
-      box-shadow: 2px 2px 1px rgba(92, 67, 8, 0.35);
-    }
-
-    /* 픽셀 폰트에는 이모지 글리프가 없어 작게 보이므로 별도 폰트로 키운다 */
-    .bmc-emoji {
-      font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
-      font-size: 1.8em;
-      vertical-align: middle;
-      text-shadow: none;
-    }
-
     /* 8비트 LCD 픽셀 테마 (하단 버튼으로 body.pixel-theme 토글) — 액자(canvas)는 영향 없음 */
     :root {
       --lcd-bg: #c9c9c9;        /* 하단 하드웨어 배경 패널 색상 (회색) */
@@ -182,6 +155,10 @@
     const wipIcons = []
     let mouse = { x: -1000, y: -1000 }
     let animationFrameId = null
+    // 캔버스의 논리 크기(=그리기 좌표계). devicePixelRatio를 낮춰 잡는 경우가 있어
+    // 마우스 좌표 환산에는 canvas.width가 아니라 이 값을 쓴다.
+    let canvasSize = null
+    let isAnimating = false
     // 마우스(hover 가능한 입력장치)가 하나라도 있으면 true. 터치스크린 데스크톱/노트북에서도
     // 마우스오버가 켜지도록 (hover: hover)가 아닌 (any-hover: hover) 사용.
     const supportsHover = window.matchMedia('(any-hover: hover)').matches
@@ -215,13 +192,14 @@
       if (animationFrameId)
       {
         cancelAnimationFrame(animationFrameId)
+        animationFrameId = null
       }
+      isAnimating = false
       frames.length = 0 // Clear frames for redraw
       githubIcons.length = 0
       wipIcons.length = 0
 
       // --- Layout Constants ---
-      const dpr = window.devicePixelRatio || 1
       const frameW = 300
       const frameH = 400
       const border = 18
@@ -246,6 +224,14 @@
       const canvasWrapper = canvas.parentElement
       const canvasW = frameW * cols + spacing * (cols - 1) + padding * 2
       const canvasH = padding * 2 + frameH * rows + rowGap * (rows - 1) + bottomIconArea
+      canvasSize = { w: canvasW, h: canvasH }
+
+      // iOS 사파리는 캔버스 한 변이 8192px를 넘으면 그 영역을 제대로 래스터화하지 못해
+      // 액자가 부분적으로 깜빡인다. 모바일 1열에서는 캔버스가 4000px 가까이 길어져
+      // devicePixelRatio 3이면 12000px가 되어 이 한계를 넘는다. 논리 해상도는 그대로 두고
+      // 배율만 낮춘다 (2배를 넘겨봐야 눈에 보이는 차이도 거의 없다).
+      const MAX_CANVAS_SIDE = 8192
+      const dpr = Math.min(window.devicePixelRatio || 1, 2, MAX_CANVAS_SIDE / canvasW, MAX_CANVAS_SIDE / canvasH)
 
       // Scale display size down to fit viewport (internal resolution stays full)
       const availW = viewportW - 40
@@ -277,7 +263,7 @@
       })
 
       // --- Run Animation Loop ---
-      animate(canvasW, canvasH)
+      ensureAnimating()
     }
 
     // 액자별 글자 배치(글자/크기/폰트/각도/좌표)는 페이지 로딩 시 액자당 한 번만 만들어 캐시한다.
@@ -440,12 +426,39 @@
       ctx.restore()
     }
 
+    // 글자가 모두 제자리에 오면 루프를 멈춘다. 캔버스가 커서(모바일 1열 기준 약 420x3986)
+    // 가만히 있는 동안에도 매 프레임 전체를 지우고 다시 그리면 iOS 사파리에서 액자가
+    // 깜빡인다. 입력(마우스 이동/이탈/클릭)이나 재레이아웃이 들어오면 다시 돌린다.
+    function ensureAnimating()
+    {
+      if (isAnimating || !canvasSize) return
+      isAnimating = true
+      animationFrameId = requestAnimationFrame(() => animate(canvasSize.w, canvasSize.h))
+    }
+
+    // 글자를 목표 위치로 부드럽게 당긴다. 충분히 가까워지면 목표에 정확히 붙이고 false를
+    // 돌려준다(= 더 움직일 것이 없음). 이 값이 루프를 멈출 시점을 정한다.
+    function ease(l, tx, ty, ta)
+    {
+      let diff = ta - l.currAngle
+      while (diff > Math.PI) diff -= Math.PI * 2; while (diff < -Math.PI) diff += Math.PI * 2
+      if (Math.abs(tx - l.currX) < 0.05 && Math.abs(ty - l.currY) < 0.05 && Math.abs(diff) < 0.002)
+      {
+        l.currX = tx; l.currY = ty; l.currAngle = ta
+        return false
+      }
+      l.currX += (tx - l.currX) * 0.12; l.currY += (ty - l.currY) * 0.12
+      l.currAngle += diff * 0.12
+      return true
+    }
+
     function animate(canvasW, canvasH)
     {
       const frameW = 300, frameH = 400
       const now = Date.now()
       ctx.clearRect(0, 0, canvasW, canvasH)
       let cursorToSet = 'default'
+      let stillAnimating = false
       const hoveredGithubIcon = getHoveredGithubIcon(mouse.x, mouse.y)
 
       frames.forEach((frame, idx) =>
@@ -469,17 +482,13 @@
 
         frame.letters.forEach(l =>
         {
-          let tx, ty, ta, alpha = 1
+          let alpha = 1
           const staggerDelay = 100, elapsed = now - frame.hoverStartTime
           if (isHovered)
           {
             if (frame.mode === 0)
             {
-              tx = l.targetX; ty = l.targetY; ta = l.targetAngle; alpha = 1
-              l.currX += (tx - l.currX) * 0.12; l.currY += (ty - l.currY) * 0.12
-              let diff = ta - l.currAngle
-              while (diff > Math.PI) diff -= Math.PI * 2; while (diff < -Math.PI) diff += Math.PI * 2
-              l.currAngle += diff * 0.12
+              if (ease(l, l.targetX, l.targetY, l.targetAngle)) stillAnimating = true
             } else
             {
               const targetTime = l.index * staggerDelay
@@ -487,18 +496,16 @@
               {
                 l.currX = l.targetX; l.currY = l.targetY; l.currAngle = l.targetAngle
                 alpha = Math.min(1, (elapsed - targetTime) / 200)
+                if (alpha < 1) stillAnimating = true
               } else
               {
                 l.currX = l.baseX; l.currY = l.baseY; l.currAngle = l.baseAngle
+                stillAnimating = true
               }
             }
           } else
           {
-            tx = l.baseX; ty = l.baseY; ta = l.baseAngle; alpha = 1
-            l.currX += (tx - l.currX) * 0.12; l.currY += (ty - l.currY) * 0.12
-            let diff = ta - l.currAngle
-            while (diff > Math.PI) diff -= Math.PI * 2; while (diff < -Math.PI) diff += Math.PI * 2
-            l.currAngle += diff * 0.12
+            if (ease(l, l.baseX, l.baseY, l.baseAngle)) stillAnimating = true
           }
           if (alpha > 0)
           {
@@ -520,27 +527,27 @@
         cursorToSet = 'pointer'
       }
       canvas.style.cursor = cursorToSet
-      animationFrameId = requestAnimationFrame(() => animate(canvasW, canvasH))
+      isAnimating = false
+      animationFrameId = null
+      if (stillAnimating) ensureAnimating()
     }
 
     // --- Event Listeners ---
     canvas.addEventListener('mousemove', (e) =>
     {
-      if (!supportsHover) return
+      if (!supportsHover || !canvasSize) return
       const rect = canvas.getBoundingClientRect()
-      const canvasCurrentW = canvas.width / (window.devicePixelRatio || 1)
-      const canvasCurrentH = canvas.height / (window.devicePixelRatio || 1)
-      mouse.x = (e.clientX - rect.left) * (canvasCurrentW / rect.width)
-      mouse.y = (e.clientY - rect.top) * (canvasCurrentH / rect.height)
+      mouse.x = (e.clientX - rect.left) * (canvasSize.w / rect.width)
+      mouse.y = (e.clientY - rect.top) * (canvasSize.h / rect.height)
+      ensureAnimating()
     })
-    canvas.addEventListener('mouseleave', () => { if (supportsHover) { mouse.x = -1000; mouse.y = -1000 } })
+    canvas.addEventListener('mouseleave', () => { if (supportsHover) { mouse.x = -1000; mouse.y = -1000; ensureAnimating() } })
     canvas.addEventListener('click', (e) =>
     {
+      if (!canvasSize) return
       const rect = canvas.getBoundingClientRect()
-      const canvasCurrentW = canvas.width / (window.devicePixelRatio || 1)
-      const canvasCurrentH = canvas.height / (window.devicePixelRatio || 1)
-      const clickX = (e.clientX - rect.left) * (canvasCurrentW / rect.width)
-      const clickY = (e.clientY - rect.top) * (canvasCurrentH / rect.height)
+      const clickX = (e.clientX - rect.left) * (canvasSize.w / rect.width)
+      const clickY = (e.clientY - rect.top) * (canvasSize.h / rect.height)
       const clickedGithubIcon = getHoveredGithubIcon(clickX, clickY)
 
       if (clickedGithubIcon)
@@ -568,6 +575,7 @@
         {
           activeFrameText = null
           mouse.x = -1000; mouse.y = -1000
+          ensureAnimating()
           return
         }
         if (activeFrameText !== clickedFrame.text)
@@ -575,6 +583,7 @@
           activeFrameText = clickedFrame.text
           mouse.x = clickedFrame.fx + frameW / 2
           mouse.y = clickedFrame.fy + frameH / 2
+          ensureAnimating()
           if (typeof gtag === 'function')
           {
             gtag('event', 'frame_hover', { frame: frameLabel(clickedFrame.text), interaction: 'touch' })
@@ -612,6 +621,10 @@
     // 잡혀 4열로 그려지는 문제 방지: 레이아웃이 확정된 다음 프레임/로드 완료 후 그린다.
     requestAnimationFrame(setupAndDraw)
     window.addEventListener('load', setupAndDraw);
+    // 유휴 상태에서는 다시 그리지 않으므로, 탭 복귀/bfcache 복원처럼 캔버스 내용이
+    // 날아갈 수 있는 시점에는 한 프레임 다시 그려 둔다.
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) ensureAnimating() })
+    window.addEventListener('pageshow', ensureAnimating)
     // 타이밍에 의존하지 않도록 실제 레이아웃 폭이 확정/변경될 때마다 다시 그린다.
     // (첫 로드 시 innerWidth가 잘못 읽혀 가로로 넘치는 문제 해결, 수동 resize 불필요)
     if (window.ResizeObserver) {
@@ -627,7 +640,5 @@
   </script>
   <footer class="footer-content">
     <p>&copy; 2026 TypoStudio. All rights reserved.</p>
-    <a class="bmc-link" href="https://buymeacoffee.com/typ0s2d10" target="_blank" rel="noopener"
-      onclick="if (typeof gtag === 'function') gtag('event', 'link_click', { link_type: 'coffee', link_url: 'https://buymeacoffee.com/typ0s2d10' })"><span class="bmc-emoji">&#9749;</span> Buy me a coffee</a>
   </footer>
 </body>
