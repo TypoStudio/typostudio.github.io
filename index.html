@@ -621,6 +621,14 @@
         }
         window.open(clickedFrameLink, "_blank")
       }
+      // 이동할 링크가 없는 액자(준비중/저장소만 있는 항목)도 관심도 집계를 위해 기록한다.
+      else if (clickedFrame && typeof gtag === 'function')
+      {
+        gtag('event', 'frame_click', {
+          frame: frameLabel(clickedFrame.text),
+          link_type: frameByText[clickedFrame.text]?.wip ? 'wip' : 'none'
+        })
+      }
     })
 
     // --- Initial Load and Resize ---
