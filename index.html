@@ -280,9 +280,70 @@
       animate(canvasW, canvasH)
     }
 
-    function initFrame(fx, fy, text, isInteractive = false)
+    // 액자별 글자 배치(글자/크기/폰트/각도/좌표)는 페이지 로딩 시 액자당 한 번만 만들어 캐시한다.
+    // 좌표는 액자 좌상단 기준 상대값이라, 화면 크기가 바뀌어 액자가 다른 칸으로 옮겨가도
+    // 재배치(재랜덤) 없이 위치만 옮겨 쓴다. 배치 계산은 글자당 최대 300회 충돌 검사라
+    // 비싼데, 예전에는 로딩/리사이즈마다 다시 굴러서 모바일에서 화면이 멎었다.
+    const letterLayoutCache = {}
+
+    function createLetterLayout(text)
     {
       const frameW = 300, frameH = 400, border = 18, letterMargin = 12
+      const rawLetters = text.replace(/\n/g, "").split("").map(l => Math.random() > 0.5 ? l.toUpperCase() : l.toLowerCase())
+      const innerW = frameW - border * 2, innerH = frameH - border * 2
+      const placed = [], verticalSegment = innerH / rawLetters.length
+      const extraBigIndex = Math.floor(Math.random() * rawLetters.length)
+      const bigIndices = []
+      while (bigIndices.length < 2 && rawLetters.length > 3)
+      {
+        const r = Math.floor(Math.random() * rawLetters.length)
+        if (r !== extraBigIndex && !bigIndices.includes(r)) bigIndices.push(r)
+      }
+
+      return rawLetters.map((char, i) =>
+      {
+        let fontSize = Math.floor(Math.random() * (verticalSegment * 0.5)) + 30
+        if (i === extraBigIndex) fontSize *= 3.5; else if (bigIndices.includes(i)) fontSize *= 2.0
+
+        const font = fonts[Math.floor(Math.random() * fonts.length)], radius = fontSize * 0.45
+        const segmentTop = i * verticalSegment
+        let dx, dy, baseAngle, found = false, bestX, bestY, minOverlap = Infinity
+
+        for (let attempt = 0; attempt < 300; attempt++)
+        {
+          let tx = radius + Math.random() * (innerW - radius * 2)
+          let ty = segmentTop + radius + Math.random() * (verticalSegment - radius * 2)
+          tx = Math.max(radius + letterMargin, Math.min(tx, innerW - radius - letterMargin))
+          ty = Math.max(radius + letterMargin, Math.min(ty, innerH - radius - letterMargin))
+          let maxOverlap = 0, overlapCount = 0
+          for (const other of placed)
+          {
+            const dist = Math.sqrt((tx - other.x) ** 2 + (ty - other.y) ** 2)
+            const overlap = (radius + other.radius) - dist
+            if (overlap > 0) { overlapCount++; maxOverlap = Math.max(maxOverlap, overlap) }
+          }
+          if (overlapCount === 0) { dx = tx; dy = ty; found = true; break }
+          if (maxOverlap < minOverlap) { minOverlap = maxOverlap; bestX = tx; bestY = ty }
+        }
+        if (!found) { dx = bestX; dy = bestY }
+        placed.push({ x: dx, y: dy, radius })
+
+        if (i === 0) baseAngle = 0
+        else
+        {
+          const confusingChars = "nupdbqIl1NZ690oO"
+          if (confusingChars.includes(char)) baseAngle = (Math.random() > 0.5) ? 0 : Math.PI / 2
+          else baseAngle = [0, Math.PI / 2, Math.PI, Math.PI * .5][Math.floor(Math.random() * 4)]
+        }
+
+        // 안쪽 영역 기준 좌표를 액자 좌상단 기준으로 환산해 둔다.
+        return { char, dx: border + dx, dy: border + dy, baseAngle, fontSize, font, index: i }
+      })
+    }
+
+    function initFrame(fx, fy, text, isInteractive = false)
+    {
+      const frameW = 300, frameH = 400, border = 18
       const frame = { fx, fy, text, letters: [], isHovered: false, wasHovered: false, hoverStartTime: 0, mode: 0 }
 
       frame.drawStatic = () =>
@@ -311,63 +372,22 @@
         const chars = line.split("")
         chars.forEach((ch, col) => letterMeta.push({ line: lineIdx, col, lineLen: chars.length }))
       })
-      const rawLetters = text.replace(/\n/g, "").split("").map(l => Math.random() > 0.5 ? l.toUpperCase() : l.toLowerCase())
       const innerX = fx + border, innerY = fy + border
       const innerW = frameW - border * 2, innerH = frameH - border * 2
-      const placed = [], verticalSegment = innerH / rawLetters.length
-      const extraBigIndex = Math.floor(Math.random() * rawLetters.length)
-      const bigIndices = []
-      while (bigIndices.length < 2 && rawLetters.length > 3)
+      const layout = letterLayoutCache[text] || (letterLayoutCache[text] = createLetterLayout(text))
+
+      layout.forEach(l =>
       {
-        const r = Math.floor(Math.random() * rawLetters.length)
-        if (r !== extraBigIndex && !bigIndices.includes(r)) bigIndices.push(r)
-      }
-
-      rawLetters.forEach((char, i) =>
-      {
-        let fontSize = Math.floor(Math.random() * (verticalSegment * 0.5)) + 30
-        if (i === extraBigIndex) fontSize *= 3.5; else if (bigIndices.includes(i)) fontSize *= 2.0
-
-        const font = fonts[Math.floor(Math.random() * fonts.length)], radius = fontSize * 0.45
-        const segmentTop = innerY + (i * verticalSegment)
-        let baseX, baseY, baseAngle, found = false, bestX, bestY, minOverlap = Infinity
-
-        for (let attempt = 0; attempt < 300; attempt++)
-        {
-          let tx = innerX + radius + Math.random() * (innerW - radius * 2)
-          let ty = segmentTop + radius + Math.random() * (verticalSegment - radius * 2)
-          tx = Math.max(innerX + radius + letterMargin, Math.min(tx, innerX + innerW - radius - letterMargin))
-          ty = Math.max(innerY + radius + letterMargin, Math.min(ty, innerY + innerH - radius - letterMargin))
-          let maxOverlap = 0, overlapCount = 0
-          for (const other of placed)
-          {
-            const dist = Math.sqrt((tx - other.x) ** 2 + (ty - other.y) ** 2)
-            const overlap = (radius + other.radius) - dist
-            if (overlap > 0) { overlapCount++; maxOverlap = Math.max(maxOverlap, overlap) }
-          }
-          if (overlapCount === 0) { baseX = tx; baseY = ty; found = true; break }
-          if (maxOverlap < minOverlap) { minOverlap = maxOverlap; bestX = tx; bestY = ty }
-        }
-        if (!found) { baseX = bestX; baseY = bestY }
-        placed.push({ x: baseX, y: baseY, radius })
-
-        if (i === 0) baseAngle = 0
-        else
-        {
-          const confusingChars = "nupdbqIl1NZ690oO"
-          if (confusingChars.includes(char)) baseAngle = (Math.random() > 0.5) ? 0 : Math.PI / 2
-          else baseAngle = [0, Math.PI / 2, Math.PI, Math.PI * .5][Math.floor(Math.random() * 4)]
-        }
-
+        const baseX = fx + l.dx, baseY = fy + l.dy
         let targetX = baseX, targetY = baseY
         if (isInteractive)
         {
           // 줄 안에서 글자를 가로 균등 배치, 줄은 세로 균등 배치
-          const m = letterMeta[i]
+          const m = letterMeta[l.index]
           targetX = innerX + (innerW / (m.lineLen + 1)) * (m.col + 1)
           targetY = innerY + innerH * ((m.line + 1) / (lineCount + 1))
         }
-        frame.letters.push({ char, baseX, baseY, baseAngle, targetX, targetY, targetAngle: 0, currX: baseX, currY: baseY, currAngle: baseAngle, fontSize, font, index: i })
+        frame.letters.push({ char: l.char, baseX, baseY, baseAngle: l.baseAngle, targetX, targetY, targetAngle: 0, currX: baseX, currY: baseY, currAngle: l.baseAngle, fontSize: l.fontSize, font: l.font, index: l.index })
       })
       frames.push(frame)
     }
@@ -422,7 +442,7 @@
 
     function animate(canvasW, canvasH)
     {
-      const frameW = 300, frameH = 400, border = 18, letterMargin = 12
+      const frameW = 300, frameH = 400
       const now = Date.now()
       ctx.clearRect(0, 0, canvasW, canvasH)
       let cursorToSet = 'default'
@@ -444,52 +464,7 @@
             gtag('event', 'frame_hover', { frame: frameLabel(frame.text), interaction: 'mouseover' })
           }
         }
-        if (!isHovered && frame.wasHovered)
-        {
-          const innerX = frame.fx + border, innerY = frame.fy + border
-          const innerW = frameW - border * 2, innerH = frameH - border * 2
-          const numLetters = frame.letters.length, verticalSegment = innerH / numLetters
-          const extraBigIndex = Math.floor(Math.random() * numLetters), bigIndices = []
-          while (bigIndices.length < 2 && numLetters > 3)
-          {
-            const r = Math.floor(Math.random() * numLetters)
-            if (r !== extraBigIndex && !bigIndices.includes(r)) bigIndices.push(r)
-          }
-          frame.letters.forEach((l, i) =>
-          {
-            let fontSize = Math.floor(Math.random() * (verticalSegment * 0.5)) + 30
-            if (i === extraBigIndex) fontSize *= 3.5; else if (bigIndices.includes(i)) fontSize *= 2.0
-            l.fontSize = fontSize
-            l.baseAngle = [0, Math.PI / 2, Math.PI, Math.PI * 1.5][Math.floor(Math.random() * 4)]
-            l.char = Math.random() > 0.5 ? l.char.toUpperCase() : l.char.toLowerCase()
-            l.font = fonts[Math.floor(Math.random() * fonts.length)]
-          })
-          const sortedLetters = [...frame.letters].sort((a, b) => b.fontSize - a.fontSize)
-          const newlyPlaced = []
-          sortedLetters.forEach(l =>
-          {
-            const radius = l.fontSize * 0.45
-            let baseX, baseY, found = false, bestX, bestY, minOverlap = Infinity
-            for (let attempt = 0; attempt < 200; attempt++)
-            {
-              let tx = innerX + radius + Math.random() * (innerW - radius * 2)
-              let ty = innerY + radius + Math.random() * (innerH - radius * 2)
-              tx = Math.max(innerX + radius + letterMargin, Math.min(tx, innerX + innerW - radius - letterMargin))
-              ty = Math.max(innerY + radius + letterMargin, Math.min(ty, innerY + innerH - radius - letterMargin))
-              let maxOverlap = 0, overlapCount = 0
-              for (const other of newlyPlaced)
-              {
-                const dist = Math.sqrt((tx - other.x) ** 2 + (ty - other.y) ** 2)
-                if ((radius + other.radius) - dist > 0) { overlapCount++; maxOverlap = Math.max(maxOverlap, (radius + other.radius) - dist) }
-              }
-              if (overlapCount === 0) { baseX = tx; baseY = ty; found = true; break }
-              if (maxOverlap < minOverlap) { minOverlap = maxOverlap; bestX = tx; bestY = ty }
-            }
-            if (!found) { baseX = bestX; baseY = bestY }
-            l.baseX = baseX; l.baseY = baseY
-            newlyPlaced.push({ x: baseX, y: baseY, radius })
-          })
-        }
+        // 마우스아웃 시에는 재배치하지 않는다. 글자는 원래 자리(baseX/baseY)로 되돌아간다.
         frame.wasHovered = isHovered
 
         frame.letters.forEach(l =>
