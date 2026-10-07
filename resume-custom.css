@@ -1,0 +1,76 @@
+.contacts li {
+  font-size: 0.7rem !important;
+  line-height: 18px !important;
+}
+.stacks {
+  overflow-y: auto;
+  max-height: 400px;
+}
+.stack-list-item button {
+  font-size: 0.5rem !important;
+}
+.list-contributions li {
+  font-size: 15px !important;
+}
+.list-contributions li span {
+  line-height: 15px !important;
+}
+
+.certificate .section-title {
+  color: #e67e22;
+}
+
+.d-none {
+  display: none !important;
+}
+
+@media print {
+  .d-print-none {
+    display: none !important;
+  }
+
+  .d-print-block {
+    display: block !important;
+  }
+
+  .stacks__category {
+    margin-bottom: 5rem;
+  }
+
+  .stack-list-item {
+    margin: 0 !important;
+  }
+
+  .list-contributions li span {
+    background-color: #eceff5 !important;
+  }
+
+  .resume__detail section {
+    page-break-after: always !important;
+    display: block !important;
+  }
+  .resume__detail section:first-child {
+    page-break-before: always !important;
+    display: block !important;
+  }
+
+  .resume__preview .resume__detail:before {
+    position: static !important;
+  }
+
+  .card {
+    page-break-inside: avoid !important;
+    position: relative;
+  }
+}
+.introduction .section-title {
+  color: #e91e63;
+}
+.introduction p.card-text {
+  font-size: 15px;
+  line-height: 1.7;
+  margin: 0;
+}
+.list-contributions li strong {
+  color: #0078FF;
+}

@@ -1,324 +1,143 @@
 <!DOCTYPE html>
-<html lang="ko" xml:lang="ko" xmlns="http://www.w3.org/1999/xhtml" data-inboxsdk-session-id="1549536734126-0.24101814373248942">
+<html lang="ko" xml:lang="ko" xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge" />
 
   <title>이력서</title>
-  <meta property="og:type" content="website">
-  <meta name="twitter:card" content="summary">
-  <meta name="csrf-param" content="authenticity_token">
-  <meta name="csrf-token" content="dPbAcH/8sNLQGpWR41q4+YcL9NlpM6SLJZnLRd0qfjdIOIG3Y4Ux13PlncAu3KrBVsDlopkG2JMEyRfB5Tjd2A==">
- 
-  <link rel="stylesheet" media="all" href="resume.css">
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="csrf-param" content="authenticity_token" />
+  <meta name="csrf-token" content="dPbAcH/8sNLQGpWR41q4+YcL9NlpM6SLJZnLRd0qfjdIOIG3Y4Ux13PlncAu3KrBVsDlopkG2JMEyRfB5Tjd2A==" />
 
-  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-1637883-1"></script>
+  <link href="resume.css?v=1.0" rel="stylesheet" media="all" />
+  <link href="resume-custom.css?v=1.2" rel="stylesheet" media="all" />
+
+  <script src="https://www.googletagmanager.com/gtag/js?id=UA-1637883-1" async></script>
   <script>
-    window.dataLayer = window.dataLayer || [];
+    window.dataLayer = window.dataLayer || []
 
-    function gtag() {
-      dataLayer.push(arguments);
+    function gtag()
+    {
+      dataLayer.push(arguments)
     }
-    gtag('js', new Date());
+    gtag("js", new Date())
 
-    gtag('config', 'UA-1637883-1');
+    gtag("config", "UA-1637883-1")
+
+    var skills = [
+      ["JIRA", 2, 1317],
+      ["MeteorJS", 3, 1205],
+      ["MongoDB", 2, 1211],
+      ["BLE", 2, 1100],
+      ["Java", 3, 1182],
+      ["JavaScript", 3, 1183],
+      ["TypeScript", 3, 1184],
+      ["HTML", 3, 1178],
+      ["AWS EC2", 3, 1096],
+      ["AWS Lambda", 2, 1098],
+      ["PHP", 3, 1227],
+      ["Laravel", 3, 1194],
+      ["jQuery", 3, 1186],
+      ["Node.js", 3, 1263],
+      ["Vue.js", 3, 1264],
+      ["Element UI", 3, 1265],
+      ["Semantic UI", 3, 1266],
+      ["Bootstrap", 3, 1267],
+      ["Netlify", 2, 1301],
+      ["Cordova", 2, 1366],
+      ["Electron", 2, 1367],
+      ["MySQL", 3, 1214],
+      ["MS-SQL", 3, 1213],
+      ["C++", 2, 1275],
+      ["C#", 2, 1231],
+      ["Ubuntu", 3, 1258],
+      ["centOS", 3, 1316],
+      ["Google Cloud Platform", 3, 1166],
+      ["Python", 3, 1230],
+      ["macOS", 3, 1179],
+      ["iOS", 3, 1180],
+      ["Android", 2, 1176],
+      ["Swift", 3, 1255],
+      ["Objective-C", 3, 1217],
+      ["Linux", 3, 1196],
+      ["Apache", 3, 1106],
+      ["IIS", 3, 1107],
+      ["Action Script", 3, 1088],
+      ["PostgreSQL", 3, 1228],
+      ["Oracle", 2, 1223],
+      ["Shell", 2, 1247],
+      ["Image Processing", 2, 1299],
+      ["Wordpress", 3, 1300],
+    ];
   </script>
 </head>
 
-<body class="resumes resumes-show" data-ns="" data-controller="resumes" data-action="show" data-defaultlocale="ko"
-  data-locale="ko" style="">
-
-
-  <div class="main ">
-
+<body class="resumes resumes-show" data-action="show" data-controller="resumes" data-defaultlocale="ko" data-locale="ko" data-ns style>
+  <div class="main">
     <div class="resume__preview row">
       <div class="resume__summary col-xs-12 col-sm-12 col-md-12 col-lg-4 col-xl-3 col-xxl-2">
         <section class="personal-information">
-          <h2 class="name">typ0s2d10</h2>
+          <h2 class="name">유승훈</h2>
           <h4 class="">프로그래머보다 소프트웨어 개발자</h4>
           <h5 class="description">개발경력 99년 ~</h5>
           <ul class="contacts">
+            <li class="birth">
+              <svg class="ic-14">
+                <use xlink:href="../images/svg-defs.svg#ic-birthday-14"></use>
+              </svg>
+              1975. 9. 2
+            </li>
+            <li class="tel">
+              <svg class="ic-14">
+                <use xlink:href="../images/svg-defs.svg#ic-phone-14"></use>
+              </svg>
+              <a href="tel:01091381165">010. 9138. 1165</a>
+            </li>
             <li class="email">
               <svg class="ic-14">
-                <use xlink:href="/images/svg-defs.svg#ic-email-14"></use>
+                <use xlink:href="../images/svg-defs.svg#ic-email-14"></use>
               </svg>
-              <a href="mailto:typ0s2d10@gmail.com">typ0s2d10@gmail.com</a>
+              <a href="mailto:oldpiano@gmail.com">oldpiano @ gmail.com</a>
             </li>
             <li class="github">
               <svg class="ic-14">
-                <use xlink:href="/images/svg-defs.svg#ic-github-14"></use>
+                <use xlink:href="../images/svg-defs.svg#ic-github-14"></use>
               </svg>
-              <a target="_blank" href="https://github.com/TypoStudio/">github.com/TypoStudio</a>  (Private)
+              <a href="https://github.com/oldpiano" target="_blank">https://github.com/oldpiano</a>
             </li>
             <li class="website">
               <svg class="ic-14">
-                <use xlink:href="/images/svg-defs.svg#ic-public-14"></use>
+                <use xlink:href="../images/svg-defs.svg#ic-public-14"></use>
               </svg>
-              <a target="_blank" href="https://typ0s2d10.blogspot.com/">typ0s2d10.blogspot.com</a> (냉무)
+              <a href="https://oldp1ano.blogspot.com/" target="_blank">https://oldp1ano.blogspot.com/</a>
             </li>
           </ul>
         </section>
         <section class="stacks">
           <div class="stacks__category">
             <ul class="stack-list">
-              <li class="stack-list-item">
-                <button class="level level-2" data-tag-id="1317">
-                  JIRA
-
-                  <span>★</span>
-                  <span>★</span>
-                </button>
-              </li>
-              <li class="stack-list-item">
-                <button class="level level-3" data-tag-id="1205">
-                  MeteorJS
-
-                  <span>★</span>
-                  <span>★</span>
-                  <span>★</span>
-                </button>
-              </li>
-              <li class="stack-list-item">
-                <button class="level level-3" data-tag-id="1211">
-                  MongoDB
-
-                  <span>★</span>
-                  <span>★</span>
-                  <span>★</span>
-                </button>
-              </li>
-              <li class="stack-list-item">
-                <button class="level level-3" data-tag-id="1183">
-                  JavaScript
-
-                  <span>★</span>
-                  <span>★</span>
-                  <span>★</span>
-                </button>
-              </li>
-              <li class="stack-list-item">
-                <button class="level level-3" data-tag-id="1178">
-                  HTML
-
-                  <span>★</span>
-                  <span>★</span>
-                  <span>★</span>
-                </button>
-              </li>
-              <li class="stack-list-item">
-                <button class="level level-2" data-tag-id="1096">
-                  Amazon EC2
-
-                  <span>★</span>
-                  <span>★</span>
-                </button>
-              </li>
-              <li class="stack-list-item">
-                <button class="level level-3" data-tag-id="1227">
-                  PHP
-
-                  <span>★</span>
-                  <span>★</span>
-                  <span>★</span>
-                </button>
-              </li>
-              <li class="stack-list-item">
-                <button class="level level-3" data-tag-id="1194">
-                  Laravel
-
-                  <span>★</span>
-                  <span>★</span>
-                  <span>★</span>
-                </button>
-              </li>
-              <li class="stack-list-item">
-                <button class="level level-3" data-tag-id="1186">
-                  jQuery
-
-                  <span>★</span>
-                  <span>★</span>
-                  <span>★</span>
-                </button>
-              </li>
-              <li class="stack-list-item">
-                <button class="level level-3" data-tag-id="1264">
-                  Vue.js
-
-                  <span>★</span>
-                  <span>★</span>
-                  <span>★</span>
-                </button>
-              </li>
-              <li class="stack-list-item">
-                <button class="level level-3" data-tag-id="1367">
-                  Electron
-
-                  <span>★</span>
-                  <span>★</span>
-                  <span>★</span>
-                </button>
-              </li>
-              <li class="stack-list-item">
-                <button class="level level-2" data-tag-id="1214">
-                  MySQL
-
-                  <span>★</span>
-                  <span>★</span>
-                </button>
-              </li>
-              <li class="stack-list-item">
-                <button class="level level-2" data-tag-id="1275">
-                  C++
-
-                  <span>★</span>
-                  <span>★</span>
-                </button>
-              </li>
-              <li class="stack-list-item">
-                <button class="level level-2" data-tag-id="1258">
-                  Ubuntu
-
-                  <span>★</span>
-                  <span>★</span>
-                </button>
-              </li>
-              <li class="stack-list-item">
-                <button class="level level-3" data-tag-id="1316">
-                  centOS
-
-                  <span>★</span>
-                  <span>★</span>
-                  <span>★</span>
-                </button>
-              </li>
-              <li class="stack-list-item">
-                <button class="level level-1" data-tag-id="1166">
-                  Google Cloud Platform
-
-                  <span>★</span>
-                  <span>★</span>
-                  <span>★</span>
-                </button>
-              </li>
-              <li class="stack-list-item">
-                <button class="level level-3" data-tag-id="1230">
-                  Python
-
-                  <span>★</span>
-                  <span>★</span>
-                  <span>★</span>
-                </button>
-              </li>
-              <li class="stack-list-item">
-                <button class="level level-2" data-tag-id="1179">
-                  macOS
-
-                  <span>★</span>
-                  <span>★</span>
-                  <span>★</span>
-                </button>
-              </li>
-              <li class="stack-list-item">
-                <button class="level level-2" data-tag-id="1180">
-                  iOS
-
-                  <span>★</span>
-                  <span>★</span>
-                  <span>★</span>
-                </button>
-              </li>
-              <li class="stack-list-item">
-                <button class="level level-3" data-tag-id="1255">
-                  Swift
-
-                  <span>★</span>
-                  <span>★</span>
-                  <span>★</span>
-                </button>
-              </li>
-              <li class="stack-list-item">
-                <button class="level level-3" data-tag-id="1217">
-                  Objective-C
-
-                  <span>★</span>
-                  <span>★</span>
-                  <span>★</span>
-                </button>
-              </li>
-              <li class="stack-list-item">
-                <button class="level level-3" data-tag-id="1196">
-                  Linux
-
-                  <span>★</span>
-                  <span>★</span>
-                  <span>★</span>
-                </button>
-              </li>
-              <li class="stack-list-item">
-                <button class="level level-3" data-tag-id="1106">
-                  Apache HTTP Server
-
-                  <span>★</span>
-                  <span>★</span>
-                  <span>★</span>
-                </button>
-              </li>
-              <li class="stack-list-item">
-                <button class="level level-3" data-tag-id="1088">
-                  Action Script
-
-                  <span>★</span>
-                  <span>★</span>
-                  <span>★</span>
-                </button>
-              </li>
-              <li class="stack-list-item">
-                <button class="level level-3" data-tag-id="1228">
-                  PostgreSQL
-
-                  <span>★</span>
-                  <span>★</span>
-                  <span>★</span>
-                </button>
-              </li>
-              <li class="stack-list-item">
-                <button class="level level-3" data-tag-id="1223">
-                  Oracle
-
-                  <span>★</span>
-                  <span>★</span>
-                  <span>★</span>
-                </button>
-              </li>
-              <li class="stack-list-item">
-                <button class="level level-2" data-tag-id="1247">
-                  Shell
-
-                  <span>★</span>
-                  <span>★</span>
-                </button>
-              </li>
-              <li class="stack-list-item">
-                <button class="level level-3" data-tag-id="1299">
-                  Image Processing
-
-                  <span>★</span>
-                  <span>★</span>
-                  <span>★</span>
-                </button>
-              </li>
+              <script>
+                skills
+                  .sort((o1, o2) => (o1[0].toLowerCase() < o2[0].toLowerCase() ? -1 : 1))
+                  .forEach(o =>
+                  {
+                    document.writeln(
+                      `<li class="stack-list-item"><button class="level level-2" data-tag-id="${o[2]}">${o[0]} <span>${"".padStart(o[1], "★")}</span></button></li>`
+                    )
+                  });
+              </script>
             </ul>
           </div>
-          <div class="help-stack-level">
-            <a data-toggle="collapse" href="#collapseHelpStackLevel" aria-expanded="false" aria-controls="collapseHelpStackLevel"
-              class="collapsed">
+          <div class="help-stack-level d-print-none">
+            <a class="collapsed" data-toggle="collapse" href="#collapseHelpStackLevel" aria-controls="collapseHelpStackLevel" aria-expanded="false">
               <h6>★★★ 설명 보기</h6>
             </a>
 
-            <div class="collapse" id="collapseHelpStackLevel" aria-expanded="false" style="">
+            <div class="collapse" id="collapseHelpStackLevel" aria-expanded="false" style>
               <table>
                 <tbody>
                   <tr>
@@ -331,10 +150,27 @@
                   </tr>
                   <tr>
                     <td class="t-level">★★★</td>
-                    <td>주요 이슈 트러블슈팅을 할 수 있을 정도로 내부구조에 대해 이해하고 있으며, 일반적이지 않은 난해한 부분도 일부 참고를 통해 개발할 수 있음. </td>
+                    <td>주요 이슈 트러블슈팅을 할 수 있을 정도로 내부구조에 대해 이해하고 있으며, 일반적이지 않은 난해한 부분도 일부 참고를 통해 개발할 수 있음.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="help-stack-level d-none d-print-block">
+            <div>
+              <table>
+                <tbody>
+                  <tr>
+                    <td class="t-level">★</td>
+                    <td>코드를 읽을 수 있으며, 책을 참고하여 약간의 수정작업 또는 작은변경사항 추가를 할 수 있음.</td>
                   </tr>
                   <tr>
-                    <td colspan="2">지원자들이 위의 기준을 보고 자신의 레벨을 선택함</td>
+                    <td class="t-level">★★</td>
+                    <td>시스템 동작 방식을 알고 있으며, 기본적인 기능을 구현할 수 있음.</td>
+                  </tr>
+                  <tr>
+                    <td class="t-level">★★★</td>
+                    <td>주요 이슈 트러블슈팅을 할 수 있을 정도로 내부구조에 대해 이해하고 있으며, 일반적이지 않은 난해한 부분도 일부 참고를 통해 개발할 수 있음.</td>
                   </tr>
                 </tbody>
               </table>
@@ -342,34 +178,203 @@
           </div>
         </section>
         <footer>
-          <a class="link-brand" href="https://programmers.co.kr/">Powered by 2019 프로그래머스</a>
+          <a class="link-brand" href="https://programmers.co.kr/">2019 Designed by Programmers</a>
         </footer>
       </div>
 
       <div class="resume__detail tab-content col-xs-12 col-sm-12 col-md-12 col-lg-8 col-xl-9 col-xxl-10" id="resume_preview_tab_content">
-        <section class="experience">
-          <label class="section-title">업무 경험</label>
-
+        <section class="introduction custom-form">
+          <label class="section-title">자기소개</label>
           <div class="card section-item">
             <div class="card-header">
-              <h3 class="card-title">J</h3>
-              <h5 class="card-text">개발팀장 | I 자회사</h5>
-              <h5 class="card-text">
-                2017 ~ 재직 중 (2년+)
-              </h5>
-
-              <h5 class="card-link">
-              </h5>
-
+              <h3 class="card-title">기술로 비즈니스를 리딩하는 실전형 개발 총괄</h3>
+              <h5 class="card-text">"관리보다 개발을, 이론보다 구현을 즐기는 27년 차 엔지니어"</h5>
+            </div>
+            <div class="card-block">
+              <p class="card-text">
+                저는 지난 커리어 동안 줄곧 팀장과 책임자 역할을 수행해 왔으나, 서류상의 관리 업무보다는 직접 아키텍처를 설계하고 코드를 작성하며 문제를 해결하는 과정에서 가장 큰 에너지를 얻는 엔지니어입니다.
+                10인 이하 소규모 정예 팀을 리딩하며 인프라 구축부터 보안 인증까지 전 과정을 완결해 본 경험은 저를 단순한 관리자가 아닌, '비즈니스를 실현시키는 기술 해결사'로 성장시켰습니다.
+              </p>
+            </div>
+          </div>
+          <div class="card section-item">
+            <div class="card-header">
+              <h3 class="card-title">1. 모든 기술 스택에 열려 있는 유연성</h3>
+            </div>
+            <div class="card-block">
+              <p class="card-text">
+                웹과 모바일을 아우르는 풀스택 역량은 물론, C++ 기반의 저수준 프로그래밍까지 폭넓은 기술 스펙트럼을 보유하고 있습니다.
+                특정 언어나 프레임워크에 매몰되지 않고, 비즈니스 목적에 가장 적합한 기술을 선택하여 즉각적으로 결과물을 만들어내는 데 특화되어 있습니다.
+                폰가비, 중가비, 트레딧과 같은 복합 플랫폼들을 성공적으로 런칭하고 운영할 수 있었던 원동력은 이러한 기술적 유연성에 있습니다.
+              </p>
+            </div>
+          </div>
+          <div class="card section-item">
+            <div class="card-header">
+              <h3 class="card-title">2. AI와 자동화를 활용한 압도적인 생산성</h3>
+            </div>
+            <div class="card-block">
+              <p class="card-text">
+                소규모 조직의 한계를 극복하기 위해 기술적 자동화에 집착합니다.
+                Jira와 Claude(LLM)를 연동하여 요구사항 분석부터 배포 스크립트 생성까지 이어지는 자동화 워크플로우를 직접 구축했습니다.
+                또한 Jenkins와 Gitea를 활용한 CI/CD 체계, CloudWatch 기반의 통합 모니터링을 통해 적은 리소스로도 대규모 플랫폼 3개를 안정적으로 운영하는 효율적인 엔지니어링 환경을 지향합니다.
+              </p>
+            </div>
+          </div>
+          <div class="card section-item">
+            <div class="card-header">
+              <h3 class="card-title">3. 보안과 인프라까지 책임지는 오너십</h3>
+            </div>
+            <div class="card-block">
+              <p class="card-text">
+                개발에만 국한되지 않고 AWS 인프라 설계와 운영을 직접 수행하며, ISMS 간편인증 취득과 같은 고난도의 보안 과업을 성공적으로 완수했습니다.
+                이는 시스템의 시작부터 끝까지, 그리고 서비스의 성장 단계에서 반드시 필요한 '보안성'과 '확장성'을 모두 고려하여 개발할 수 있는 역량을 의미합니다.
+              </p>
+            </div>
+          </div>
+          <div class="card section-item">
+            <div class="card-header">
+              <h3 class="card-title">핵심 역량 요약</h3>
             </div>
             <div class="card-block">
               <ul class="list-contributions">
                 <li class="parts-list">
-                  병원 업무용 소프트웨어 서비스 개발팀장으로 전체적인 개발 및 운영책임을 맡음
+                  Core Skills: 웹(Full-stack), 모바일 앱 개발, 시스템 아키텍처 설계
+                </li>
+                <li class="parts-list">
+                  Infrastructure &amp; Security: AWS 운영 총괄, ISMS 간편인증 취득, 보안 설계
+                </li>
+                <li class="parts-list">
+                  Automation: Jira-Claude 연동 개발 자동화, Jenkins/Gitea CI/CD 파이프라인 구축
+                </li>
+                <li class="parts-list">
+                  Leadership: 10인 이하 소수 정예 조직 리딩 및 기술 내재화 총괄
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="card section-item">
+            <div class="card-header">
+              <h3 class="card-title">맺음말</h3>
+            </div>
+            <div class="card-block">
+              <p class="card-text">
+                저는 팀장이라는 직함에 안주하지 않고, 가장 어려운 기술적 난제를 직접 해결할 때 가치를 느끼는 개발자입니다.
+                관리 시스템 뒤에 숨지 않고 동료들과 함께 코드로 소통하며, 회사의 비즈니스 목표를 가장 빠르고 견고하게 현실로 만들어내겠습니다.
+              </p>
+            </div>
+          </div>
+        </section>
+        <div style="break-after: column;"></div>
+        <section class="experience">
+          <label class="section-title">업무 경력</label>
+          <div class="card section-item">
+            <div class="card-header">
+              <h3 class="card-title">주식회사업스테어스</h3>
+              <h5 class="card-text">서비스개발본부 부장 | 개발 총괄 (Tech Lead / Head of Engineering)</h5>
+              <h5 class="card-text">2021. 11. ~ 재직 중</h5>
+            </div>
+            <div class="card-block">
+              <ul class="list-contributions">
+                <li>
+                  10인 이하 소규모 개발 조직을 리딩하며 폰가비, 중가비, 트레딧 3개 서비스의 설계·개발·인프라·보안을 총괄.
+                  각 서비스의 비즈니스 모델에 최적화된 기술 스택을 설계하고, 풀스택 개발부터 클라우드 아키텍처, 운영 자동화, 보안 거버넌스까지 전 영역을 직접 구축·운영
+                </li>
+                <li class="parts-list">
+                  <strong>[AI 기반 개발 및 배포 프로세스 자동화]</strong>
+                </li>
+                <li class="parts-list">
+                  Jira–Claude(LLM) 연동 자동화 체계 구축: Jira 티켓의 요구사항을 분석하여 기능 설계 초안과 배포 스크립트를 자동 생성하는 워크플로우를 설계·도입
+                  <span data-tag-id="1317">Jira</span>
+                  <span>Claude</span>
+                </li>
+                <li class="parts-list">
+                  Gitea &amp; Jenkins 기반 CI/CD 파이프라인 구축: 코드 병합부터 테스트, 빌드, 운영 서버 배포까지 자동화하여 휴먼 에러 최소화 및 릴리즈 리드타임 단축
+                  <span>Gitea</span>
+                  <span>Jenkins</span>
+                </li>
+                <li class="parts-list">
+                  AI 기반 문서화·요구사항 정제 프로세스 정립: 기술 문서 자동화 및 요구사항 정의 체계 고도화
+                </li>
+                <li class="parts-list">
+                  <strong>[서비스 아키텍처 및 풀스택 개발 총괄]</strong>
+                </li>
+                <li class="parts-list">
+                  폰가비 (중고폰 거래 플랫폼): 매입·검수·정산 전 과정을 아우르는 데이터 파이프라인 및 시세 엔진 최적화
+                  <span data-tag-id="1096">AWS</span>
+                  <span data-tag-id="1263">Node.js</span>
+                  <span>Nuxt.js</span>
+                  <span data-tag-id="1264">Vue.js</span>
+                  <span data-tag-id="1214">MySQL</span>
+                </li>
+                <li class="parts-list">
+                  중가비 (재고관리 프로그램): 재고·정산 로직 설계 및 운영 자동화 체계 구축
+                  <span data-tag-id="1231">C#</span>
+                </li>
+                <li class="parts-list">
+                  트레딧 (중고폰 보상판매 플랫폼): 멀티플랫폼 구조 설계, 기존 서비스와의 공통 모듈화 전략으로 코드 재사용성 및 유지보수 효율성 확보
+                  <span data-tag-id="1096">AWS</span>
+                  <span data-tag-id="1227">PHP</span>
+                  <span data-tag-id="1214">MySQL</span>
+                  <span>Flutter</span>
+                </li>
+                <li class="parts-list">
+                  3개 플랫폼 간 공통 도메인 모델과 모듈화 전략을 수립하여 중복 개발을 방지하고, 시스템 가시성과 확장성을 동시에 확보
+                </li>
+                <li class="parts-list">
+                  <strong>[인프라 설계·운영 및 통합 모니터링]</strong>
+                </li>
+                <li class="parts-list">
+                  AWS 인프라 직접 설계 및 운영: EC2, RDS, S3 등 클라우드 자원 아키텍처를 설계하여 트래픽 증가에 대비한 확장 구조 마련
+                  <span data-tag-id="1096">AWS EC2</span>
+                  <span>AWS RDS</span>
+                  <span>AWS S3</span>
+                </li>
+                <li class="parts-list">
+                  CloudWatch 기반 실시간 모니터링 체계 구축: 지표 수집·알람 자동화를 통해 장애 대응 리드타임 최소화
+                  <span>CloudWatch</span>
+                </li>
+                <li class="parts-list">
+                  내부 인프라 체계 구축: 개발·보안 인프라를 통합 설계하여 개발 조직의 거버넌스 체계화
+                  <span data-tag-id="1317">Jira</span>
+                  <span>Gitea</span>
+                  <span>Jenkins</span>
+                  <span>Passbolt</span>
+                </li>
+                <li class="parts-list">
+                  <strong>[보안 거버넌스 수립 및 ISMS 인증 취득]</strong>
+                </li>
+                <li class="parts-list">
+                  ISMS 간편인증 취득 (2025): 망 분리, 접근 통제, 개인정보 보호 정책 등 기술적 요구사항을 수립하고 인프라 보안 강화를 총괄
+                </li>
+                <li class="parts-list">
+                  DB 암호화 및 보안 아키텍처 설계: 개인정보 보호 및 규제 준수를 위한 암호화·접근제어 체계 설계
+                </li>
+                <li>주요직무: 개발총괄</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="card section-item">
+            <div class="card-header">
+              <h3 class="card-title">제이플랩</h3>
+              <h5 class="card-text">개발팀장 | 지란지교 자회사</h5>
+              <h5 class="card-text">2017. 3. ~ 재직 중</h5>
+            </div>
+            <div class="card-block">
+              <ul class="list-contributions">
+                <li class="parts-list">
+                  치과 업무용 소프트웨어 서비스 개발팀장으로 전체적인 개발 및 운영책임을 맡음
                   <span data-tag-id="1317">JIRA</span>
                 </li>
                 <li class="parts-list">
-                  병원 업무용 메신저 기획, 개발 및 운영 (Rocket.Chat Fork)
+                  <a data-original-title="https://www.chikatalk.co.kr/" data-placement="top" data-toggle="tooltip" href="https://www.chikatalk.co.kr/" target="_blank">
+                    <svg class="ic-18 ic-link">
+                      <use xlink:href="../images/svg-defs.svg#ic-public"></use>
+                    </svg>
+                    치카톡
+                  </a>
+                  치과 업무용 메신저 기획, 개발 및 운영 (Rocket.Chat Fork)
                   <span data-tag-id="1205">MeteorJS</span>
                   <span data-tag-id="1211">MongoDB</span>
                   <span data-tag-id="1183">JavaScript</span>
@@ -378,8 +383,67 @@
                   <span data-tag-id="1367">Electron</span>
                   <span data-tag-id="1258">Ubuntu</span>
                 </li>
+
                 <li class="parts-list">
-                  의료제작물 온라인 주문 서비스 개발 담당
+                  <a data-original-title="https://dentlab.chikatalk.co.kr/" data-placement="top" data-toggle="tooltip" href="https://dentlab.chikatalk.co.kr/" target="_blank">
+                    <svg class="ic-18 ic-link">
+                      <use xlink:href="../images/svg-defs.svg#ic-public"></use>
+                    </svg>
+                    치카공
+                  </a>
+                  기공물 온라인 주문 서비스 개발 담당
+                  <span data-tag-id="1106">Apache</span>
+                  <span data-tag-id="1227">PHP</span>
+                  <span data-tag-id="1194">Laravel</span>
+                  <span data-tag-id="1186">jQuery</span>
+                  <span data-tag-id="1264">Vue.js</span>
+                  <span data-tag-id="1214">MySQL</span>
+                  <span data-tag-id="1258">Ubuntu</span>
+                </li>
+                <li class="parts-list">
+                  응급구인 신청 및 관리 서비스 개발
+                  <span data-tag-id="1106">Apache</span>
+                  <span data-tag-id="1227">PHP</span>
+                  <span data-tag-id="1194">Laravel</span>
+                  <span data-tag-id="1186">jQuery</span>
+                  <span data-tag-id="1264">Vue.js</span>
+                  <span data-tag-id="1214">MySQL</span>
+                  <span data-tag-id="1258">Ubuntu</span>
+                </li>
+                <li class="parts-list">스마트공장 공급기업: 치과기공소에 치카공 서비스 제공</li>
+                <li class="parts-list">
+                  윈도우용 메신저(서버포함) 유지 보수
+                  <span data-tag-id="1275">C++</span>
+                  <span data-tag-id="1235">VC++</span>
+                  <span data-tag-id="1316">centOS</span>
+                </li>
+                <li class="parts-list">
+                  DJI 드론 제어 어플리케이션 개발
+                  <span data-tag-id="1100">BLE</span>
+                  <span data-tag-id="1176">Android</span>
+                  <span data-tag-id="1182">Java</span>
+                  <span data-tag-id="1180">iOS</span>
+                  <span data-tag-id="1255">Swift</span>
+                </li>
+                <li class="parts-list">
+                  <a data-original-title="http://www.devicekeeper.co.kr/" data-placement="top" data-toggle="tooltip" href="http://www.devicekeeper.co.kr/" target="_blank">
+                    <svg class="ic-18 ic-link">
+                      <use xlink:href="../images/svg-defs.svg#ic-public"></use>
+                    </svg>
+                    디바이스키퍼
+                  </a>
+                  네트워크내 비인가 단말차단 보안 서비스 개발 및 운영
+                  <span data-tag-id="1106">Apache</span>
+                  <span data-tag-id="1227">PHP</span>
+                  <span data-tag-id="1194">Laravel</span>
+                  <span data-tag-id="1186">jQuery</span>
+                  <span data-tag-id="1266">Semantic UI</span>
+                  <span data-tag-id="1214">MySQL</span>
+                  <span data-tag-id="1316">centOS</span>
+                </li>
+                <li class="parts-list">
+                  에스원 정보보안 사업 보안서비스 중계 서비스 개발
+                  <span data-tag-id="1106">Apache</span>
                   <span data-tag-id="1227">PHP</span>
                   <span data-tag-id="1194">Laravel</span>
                   <span data-tag-id="1186">jQuery</span>
@@ -388,27 +452,24 @@
                   <span data-tag-id="1316">centOS</span>
                 </li>
                 <li class="parts-list">
-                  윈도우용 메신저(서버포함) 유지 보수
-                  <span data-tag-id="1275">C++</span>
-                  <span data-tag-id="1235">VC++</span>
-                  <span data-tag-id="1316">centOS</span>
+                  티켓팅 시스템 개발 및 운영
+                  <span data-tag-id="1263">Node.js</span>
+                  <span data-tag-id="1264">Vue.js</span>
+                  <span data-tag-id="1228">PostgreSQL</span>
+                  <span data-tag-id="1186">jQuery</span>
+                  <span data-tag-id="1265">Element UI</span>
+                  <span data-tag-id="1301">Netlify</span>
+                  <span data-tag-id="1098">AWS Lambda</span>
                 </li>
-
-                <li>팀원구성: 개발 5, 디자인 1, CS 3</li>
               </ul>
             </div>
           </div>
 
-
           <div class="card section-item">
             <div class="card-header">
-              <h3 class="card-title">I</h3>
-              <h5 class="card-text">경영전략부 개발팀장</h5>
-              <h5 class="card-text">
-                2016 ~ 2017 (6개월+)
-              </h5>
-
-
+              <h3 class="card-title">지란지교소프트</h3>
+              <h5 class="card-text">경영전략부 NewBiz 개발팀장</h5>
+              <h5 class="card-text">2016. 10. ~ 2017. 2.</h5>
             </div>
             <div class="card-block">
               <ul class="list-contributions">
@@ -416,24 +477,17 @@
                   macOS용 개인정보 문서필터링 어플리케이션 개발
                   <span data-tag-id="1179">macOS</span>
                   <span data-tag-id="1255">Swift</span>
-                  <span data-tag-id="1217">Objective-C</span>
                 </li>
-                <li class="parts-list">
-                  의료용 업무 소프트웨어 개발 기획 (→ F사로 분사함)
-                </li>
+                <li class="parts-list">의료용 업무 소프트웨어 개발 기획 (→ 제이플랩으로 분사함)</li>
               </ul>
             </div>
           </div>
 
           <div class="card section-item">
             <div class="card-header">
-              <h3 class="card-title">H</h3>
-              <h5 class="card-text">개발팀장 | I 자회사</h5>
-              <h5 class="card-text">
-                2013 ~ 2016 (3년+)
-              </h5>
-
-
+              <h3 class="card-title">제이제이테크</h3>
+              <h5 class="card-text">개인서비스 개발팀장 | 지란지교소프트 자회사</h5>
+              <h5 class="card-text">2013. 6. ~ 2016. 9.</h5>
             </div>
             <div class="card-block">
               <ul class="list-contributions">
@@ -468,17 +522,11 @@
             </div>
           </div>
 
-
-
           <div class="card section-item">
             <div class="card-header">
-              <h3 class="card-title">G</h3>
+              <h3 class="card-title">KOVEC</h3>
               <h5 class="card-text">개발팀장</h5>
-              <h5 class="card-text">
-                2005 ~ 2013 (8년+)
-              </h5>
-
-
+              <h5 class="card-text">2005. 6. ~ 2013. 4.</h5>
             </div>
             <div class="card-block">
               <ul class="list-contributions">
@@ -487,7 +535,7 @@
                   <span data-tag-id="1316">centOS</span>
                   <span data-tag-id="1196">Linux</span>
                   <span data-tag-id="1227">PHP</span>
-                  <span data-tag-id="1106">Apache HTTP Server</span>
+                  <span data-tag-id="1106">Apache</span>
                   <span data-tag-id="1178">HTML</span>
                   <span data-tag-id="1183">JavaScript</span>
                   <span data-tag-id="1088">Action Script</span>
@@ -504,7 +552,7 @@
                   <span data-tag-id="1227">PHP</span>
                   <span data-tag-id="1247">Shell</span>
                   <span data-tag-id="1299">Image Processing</span>
-                  <span data-tag-id="1106">Apache HTTP Server</span>
+                  <span data-tag-id="1106">Apache</span>
                   <span data-tag-id="1183">JavaScript</span>
                   <span data-tag-id="1186">jQuery</span>
                   <span data-tag-id="1214">MySQL</span>
@@ -516,24 +564,20 @@
                   <span data-tag-id="1088">Action Script</span>
                   <span data-tag-id="1183">JavaScript</span>
                   <span data-tag-id="1196">Linux</span>
-                  <span data-tag-id="1106">Apache HTTP Server</span>
+                  <span data-tag-id="1106">Apache</span>
                   <span data-tag-id="1214">MySQL</span>
                 </li>
 
-                <li>일본소재 회사로 2005년~2013년까지 일본에서 거주함. 일본어 회화 중상.</li>
+                <li>일본소재 회사로 2005년 ~ 2013년까지 일본에서 거주함. 일본어 회화 중상.</li>
               </ul>
             </div>
           </div>
 
           <div class="card section-item">
             <div class="card-header">
-              <h3 class="card-title">F</h3>
+              <h3 class="card-title">SAMEIS</h3>
               <h5 class="card-text">프론트엔드 개발자</h5>
-              <h5 class="card-text">
-                2004 ~ 2005 (1년+)
-              </h5>
-
-
+              <h5 class="card-text">2004. 3. ~ 2005. 5.</h5>
             </div>
             <div class="card-block">
               <ul class="list-contributions">
@@ -544,100 +588,41 @@
                   <span data-tag-id="1183">JavaScript</span>
                 </li>
 
-                <li>당시 야후 및 각종 게임의 아바타 서비스로 납품되었음</li>
+                <li>당시 야후 및 각종 게임의 아바타 서비스로 납품되었음.</li>
               </ul>
             </div>
           </div>
 
           <div class="card section-item">
             <div class="card-header">
-              <h3 class="card-title">E</h3>
+              <h3 class="card-title">다성정보기술</h3>
               <h5 class="card-text">PL, 기획</h5>
-              <h5 class="card-text">
-                2003 ~ 2004 (6개월+)
-              </h5>
-
-
+              <h5 class="card-text">2003. 10. ~ 2004. 2.</h5>
             </div>
             <div class="card-block">
               <ul class="list-contributions">
-                <li class="parts-list"> P시 Y구청 사이트 기획 및 PL </li>
+                <li class="parts-list">부산시 연제구청 사이트 기획 및 PL</li>
 
-                <li>개발은 외주 하청이었고, 구청홈페이지 리뉴얼 사업 시행처로 선정 후 실제 기획 및 개발 매니징을 맡음</li>
-                <li>실제 개발기간 4개월, 이후 유지/보수</li>
+                <li>개발은 외주 하청이었고, 구청홈페이지 리뉴얼 사업 시행처로 선정 후 실제 기획 및 개발 매니징을 맡음. 개발기간 4개월</li>
               </ul>
             </div>
           </div>
-
-
-
-
         </section>
-        <section class="toy-project">
-          <label class="section-title">개인 프로젝트</label>
-
+        <div style="break-after: column;"></div>
+        <section class="certificate">
+          <label class="section-title">자격증</label>
           <div class="card section-item">
             <div class="card-header">
-              <h3 class="card-title">iPhone Tweak</h3>
-              <h5 class="card-text">탈옥된 iPhone에서 사용할 수 있는 앱 소수 제작</h5>
-              <h5 class="card-text">2012 ~ 2017 (5년+)</h5>
-            </div>
-            <div class="card-block">
-              <ul class="list-contributions">
-
-                <li class="parts-list">
-                  iOS용 Tweaks 및 앱 개발
-                  <span data-tag-id="1180">iOS</span>
-                  <span data-tag-id="1217">Objective-C</span>
-                  <span data-tag-id="1255">Swift</span>
-                </li>
-
-              </ul>
+              <h3 class="card-title">정보보안기사</h3>
+              <h5 class="card-text">한국인터넷진흥원</h5>
+              <h5 class="card-text">2025. 12.</h5>
             </div>
           </div>
-
           <div class="card section-item">
             <div class="card-header">
-              <h3 class="card-title">O 전자책 뷰어</h3>
-              <h5 class="card-text">전자책 대여 서비스의 iOS 모바일 앱 개발</h5>
-              <h5 class="card-text">2011 ~ 2012 (6개월)</h5>
-            </div>
-            <div class="card-block">
-              <ul class="list-contributions">
-
-                <li class="parts-list">
-                  iOS용 ePub 전자책 뷰어 개발
-                  <span data-tag-id="1180">iOS</span>
-                  <span data-tag-id="1217">Objective-C</span>
-                  <span data-tag-id="1183">JavaScript</span>
-                </li>
-
-              </ul>
-            </div>
-          </div>
-
-          <div class="card section-item">
-            <div class="card-header">
-              <h3 class="card-title">영화 더블타켓 홈페이지</h3>
-              <h5 class="card-text">영문 사이트를 한글화</h5>
-              <h5 class="card-text">2007 (1개월)</h5>
-            </div>
-            <div class="card-block">
-              <ul class="list-contributions">
-                <li>팀구성: 1인 담당.</li>
-
-
-                <li class="parts-list">
-                  영문으로 된 사이트 전체를 한글화
-                  <span data-tag-id="1178">HTML</span>
-                  <span data-tag-id="1183">JavaScript</span>
-                </li>
-                <li class="parts-list">
-                  사이트내 Flash로 개발된 저격 게임 수정 및 한글화
-                  <span data-tag-id="1088">Action Script</span>
-                </li>
-
-              </ul>
+              <h3 class="card-title">정보처리기사</h3>
+              <h5 class="card-text">한국산업인력공단</h5>
+              <h5 class="card-text">2003. 04.</h5>
             </div>
           </div>
         </section>
@@ -645,21 +630,17 @@
           <label class="section-title">교육</label>
           <div class="card section-item">
             <div class="card-header">
-              <h3 class="card-title">P대학교</h3>
+              <h3 class="card-title">부산대학교</h3>
               <h5 class="card-text">학사</h5>
               <h5 class="card-text">국어국문학과 전공</h5>
-              <h5 class="card-text">
-                1994-03 ~ 1999-02
-              </h5>
+              <h5 class="card-text">1994. 3. ~ 1999. 2.</h5>
             </div>
           </div>
           <div class="card section-item">
             <div class="card-header">
-              <h3 class="card-title">D고등학교</h3>
+              <h3 class="card-title">진주동명고등학교</h3>
               <h5 class="card-text">졸업</h5>
-              <h5 class="card-text">
-                1991-03 ~ 1994-02
-              </h5>
+              <h5 class="card-text">1991. 3. ~ 1994. 2.</h5>
             </div>
           </div>
         </section>
@@ -678,7 +659,7 @@
                 <li>기술 세미나 듣고 해석 가능</li>
                 <li>업무 회의 가능</li>
                 <li>전시회 통역 가능</li>
-                <li>사극 제외 청취 가능</li>
+                <li>사극 제외 드라마/애니/뉴스 등 청취 가능</li>
               </ul>
             </div>
           </div>
@@ -690,41 +671,31 @@
             <div class="card-block">
               <ul class="list-contributions">
                 <li>개발 문서 읽기 가능</li>
-                <li>기술 세미나 듣고 대충 해석 가능</li>
+                <li>기술 세미나 듣고 해석 가능</li>
                 <li>일상회화 + 손발짓 가능</li>
               </ul>
             </div>
           </div>
         </section>
-
-
       </div>
     </div>
-
   </div>
 
-
-
-  <div class="modal fade" id="modal-dialog" tabindex="-1" role="dialog" aria-hidden="true"></div>
-
   <script src="resume.js"></script>
-  <div class="tui-tooltip" style="display: none;">
-    <div class="arrow"></div><span class="text"></span>
+  <div class="tui-tooltip" style="display: none">
+    <div class="arrow"></div>
+    <span class="text"></span>
   </div>
   <script>
     //<![CDATA[
-    window.addEventListener('load', function () {});
+    window.addEventListener("load", function () { })
     //]]>
   </script>
 
-
-
   <noscript>
     이 사이트의 기능을 모두 활용하기 위해서는 자바스크립트를 활성화할 필요가 있습니다.
-    <a href="http://www.enable-javascript.com/ko/" target="_blank">
-      브라우저에서 자바스크립트를 활성화하는 방법</a>을 참고하세요.
+    <a href="http://www.enable-javascript.com/ko/" target="_blank"> 브라우저에서 자바스크립트를 활성화하는 방법</a>을 참고하세요.
   </noscript>
-
 
   <div id="snackbar-container"></div>
 </body>
