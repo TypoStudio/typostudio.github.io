@@ -6,6 +6,19 @@
   overflow-y: auto;
   max-height: 400px;
 }
+/* 좌우 배치(lg~)에서는 사이드바 남은 높이를 stacks가 채움 */
+@media screen and (min-width: 992px) {
+  .resume__summary {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+  .stacks {
+    flex: 1;
+    min-height: 0;
+    max-height: none;
+  }
+}
 .stack-list-item button {
   font-size: 0.5rem !important;
 }
@@ -73,4 +86,38 @@
 }
 .list-contributions li strong {
   color: #0078FF;
+}
+.contacts .btn-pdf {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  margin-left: 1.37rem;
+  padding: 0.25rem 0.625rem;
+  border: 1px solid #37485D;
+  border-radius: 0.1875rem;
+  color: white;
+  text-decoration: none;
+}
+.contacts .btn-pdf svg {
+  width: 14px;
+  height: 14px;
+  margin: 0 !important;
+  fill: currentColor !important;
+}
+.contacts .btn-pdf:hover {
+  border-color: #0078FF;
+  color: #0078FF;
+}
+footer a {
+  color: #7890a0 !important;
+  text-decoration: none;
+  font-size: 11px;
+}
+
+/* 2단(1200~1999px)에서는 자기소개+업무경력 | 자격증·교육·외국어, 3단(2000px~)에서는 자기소개 | 업무경력 | 자격증 */
+@media (min-width: 2000px) {
+  .break-xxl {
+    break-after: column;
+  }
 }
