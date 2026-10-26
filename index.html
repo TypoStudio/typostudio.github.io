@@ -47,6 +47,26 @@
       margin: 0;
     }
 
+    .coffee-link {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      align-items: center;
+      min-height: 44px;
+      color: #333;
+      font-family: inherit;
+      font-size: 0.65rem;
+      line-height: 1.8;
+      text-decoration: none;
+    }
+
+    .coffee-link:hover,
+    .coffee-link:focus-visible {
+      text-decoration: underline;
+      text-underline-offset: 0.3em;
+    }
+
     canvas {
       display: block;
     }
@@ -83,6 +103,7 @@
     }
 
     body.pixel-theme h3,
+    body.pixel-theme .coffee-link,
     body.pixel-theme footer,
     body.pixel-theme .theme-toggle {
       font-family: 'Press Start 2P', monospace;
@@ -140,6 +161,8 @@
 </head>
 
 <body class="body-layout pixel-theme">
+  <a class="coffee-link" href="https://buymeacoffee.com/typ0s2d10" target="_blank" rel="noopener noreferrer"
+    onclick="if (typeof gtag === 'function') gtag('event', 'link_click', { link_type: 'coffee', link_url: 'https://buymeacoffee.com/typ0s2d10' })">Buy me a coffee</a>
   <div class="header">
     <h3>TypoStudio</h3>
   </div>
