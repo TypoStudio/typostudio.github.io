@@ -16,7 +16,7 @@
   <meta name="google-site-verification" content="KDNq4waLc6J8OY4zjitT7h3_gDvw21oO0Ud8p4fwc4A" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400&family=Press+Start+2P&display=swap">
   <title>TypoStudio</title>
   <style>
     * {
@@ -194,25 +194,28 @@
     let visibleFrameTexts = new Set()
     let visibilityAnimationFrameId = null
     const fonts = ["serif", "sans-serif", "monospace", "cursive", "fantasy"]
+    const descriptionFont = '"Noto Serif KR", "AppleMyungjo", "Batang", serif'
+    const quarterTurn = Math.PI / 2
     const GITHUB_ICON_PATH = new Path2D("M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z")
-    // 액자 정보 단일 소스. text: 액자에 들어가는 글자, link: 프로젝트(데모) 링크, repo: github 저장소.
+    // 액자 정보 단일 소스. description: 액자 안에 작게 흩뿌릴 설명 문구.
+    // text: 액자에 들어가는 글자, link: 프로젝트(데모) 링크, repo: github 저장소.
     // wip: true면 액자 아래에 공사중 아이콘을 그린다(클릭 대상 아님).
     // 배치 순서, github 아이콘 표시 여부, 링크 동작이 모두 이 배열에서 파생된다.
     // text 안의 줄바꿈(\n)이 액자 안 글자의 줄 구성을 결정한다. 줄별 글자 수와 줄 개수로
     // 위치를 계산하므로(아래 initFrame) 새 항목은 분기 추가 없이 자동 배치된다.
     const framesData = [
-      { text: "TYPHOON\nLAB", link: "https://typhoon.typostudio.dev/", repo: "https://github.com/TypoStudio/typhoon-lab" },
-      { text: "AI\nUSAGE", link: null, repo: "https://github.com/TypoStudio/ai-usage" },
-      { text: "HOUSE\nBUDGET", link: "https://house-budget.typostudio.dev/", repo: "https://github.com/TypoStudio/h-budget" },
-      { text: "FAMILY\nSITE\nLINK", link: "https://familysitelink.typostudio.dev/", repo: null },
-      { text: "MATCH\nIT", link: "https://matchit.typostudio.dev", repo: "https://github.com/TypoStudio/matchit" },
-      { text: "SNATCH", link: null, repo: "https://github.com/TypoStudio/snatch" },
-      { text: "FOCUS\nPLAY", link: null, repo: "https://github.com/TypoStudio/focus-play" },
-      { text: "QL\nZIP\nLIST", link: null, repo: "https://github.com/TypoStudio/qlziplist" },
-      { text: "EINK\nCLOCK", link: "https://typostudio.github.io/einkclock/", repo: "https://github.com/TypoStudio/einkclock" },
-      { text: "SSH\nTUNNEL\nMANAGER", link: null, repo: "https://github.com/TypoStudio/ssh-tunnel-for-macos" },
-      { text: "DOUBLE\nPENDULUM", link: "https://typostudio.github.io/double-pendulum/", repo: "https://github.com/TypoStudio/double-pendulum" },
-      { text: "TRIP\nBALL", link: null, repo: null, wip: true },
+      { text: "TYPHOON\nLAB", description: ["세계 지도에서 바다와 대기 조건으로 태풍을 만들고 도시를 지키는 날씨 시뮬레이션"], link: "https://typhoon.typostudio.dev/", repo: "https://github.com/TypoStudio/typhoon-lab" },
+      { text: "AI\nUSAGE", description: ["클로드 코드와 코덱스 여러 계정의 사용 한도를 활동 링으로 보여 주는 맥 바탕화면 위젯"], link: null, repo: "https://github.com/TypoStudio/ai-usage" },
+      { text: "HOUSE\nBUDGET", description: ["내 구글 시트에 월별 수입과 지출을 기록하고 이월잔고를 계산하는 웹 가계부"], link: "https://house-budget.typostudio.dev/", repo: "https://github.com/TypoStudio/h-budget" },
+      { text: "FAMILY\nSITE\nLINK", description: ["가족 기기의 접속 가능한 사이트와 사이트별 사용 시간을 관리하는 서비스"], link: "https://familysitelink.typostudio.dev/", repo: null },
+      { text: "MATCH\nIT", description: ["한자와 영어 단어 수학 공식의 정답 조각을 맞춰 없애며 배우는 퍼즐 게임"], link: "https://matchit.typostudio.dev", repo: "https://github.com/TypoStudio/matchit" },
+      { text: "SNATCH", description: ["제목 표시줄을 잡지 않고 보조 키와 마우스 움직임만으로 맥의 창을 옮기고 크기를 바꾸는 앱"], link: null, repo: "https://github.com/TypoStudio/snatch" },
+      { text: "FOCUS\nPLAY", description: ["전체 화면 영상 재생을 감지해 다른 모니터를 자동으로 어둡게 만드는 맥 메뉴 막대 앱"], link: null, repo: "https://github.com/TypoStudio/focus-play" },
+      { text: "QL\nZIP\nLIST", description: ["압축을 풀지 않고 파인더에서 파일 트리와 크기 수정 날짜를 확인하는 빠른 보기 확장"], link: null, repo: "https://github.com/TypoStudio/qlziplist" },
+      { text: "EINK\nCLOCK", description: ["전자잉크와 전자책 단말기에 맞춘 웹 시계로 디지털과 아날로그 모드 날씨 달력을 제공"], link: "https://typostudio.github.io/einkclock/", repo: "https://github.com/TypoStudio/einkclock" },
+      { text: "SSH\nTUNNEL\nMANAGER", description: ["맥 메뉴 막대에서 SSH 터널을 연결하고 포트 포워딩 규칙을 관리하는 앱"], link: null, repo: "https://github.com/TypoStudio/ssh-tunnel-for-macos" },
+      { text: "DOUBLE\nPENDULUM", description: ["이중 진자와 삼체 궤도 탐사선의 스윙바이로 혼돈과 중력 운동을 살펴보는 시뮬레이션"], link: "https://typostudio.github.io/double-pendulum/", repo: "https://github.com/TypoStudio/double-pendulum" },
+      { text: "TRIP\nBALL", description: ["실제 지도 위를 감자 캐릭터로 탐험하며 공을 차고 사물을 배치하는 물리 기반 게임"], link: null, repo: null, wip: true },
     ]
     const frameByText = Object.fromEntries(framesData.map(f => [f.text, f]))
     // GA 이벤트/식별용 라벨: 줄바꿈 제거한 순수 이름
@@ -344,6 +347,7 @@
     // 재배치(재랜덤) 없이 위치만 옮겨 쓴다. 배치 계산은 글자당 최대 300회 충돌 검사라
     // 비싼데, 예전에는 로딩/리사이즈마다 다시 굴러서 모바일에서 화면이 멎었다.
     const letterLayoutCache = {}
+    const descriptionLayoutCache = {}
 
     function createLetterLayout(text)
     {
@@ -400,10 +404,229 @@
       })
     }
 
+    function createDescriptionLayout(frame)
+    {
+      // 설명의 난수는 별도로 생성해 기존 제목의 무작위 배치에 영향을 주지 않는다.
+      let seed = Array.from(frame.text).reduce((hash, char) => Math.imul(hash ^ char.codePointAt(0), 16777619), 2166136261)
+      const random = () => { seed = Math.imul(seed, 1664525) + 1013904223 | 0; return (seed >>> 0) / 4294967296 }
+      ctx.save()
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      const occupied = frame.letters.map(l =>
+      {
+        ctx.font = `bold ${l.targetFontSize}px ${l.font}`
+        const m = ctx.measureText(l.char)
+        return {
+          left: l.targetX - frame.fx - m.actualBoundingBoxLeft - 4,
+          right: l.targetX - frame.fx + m.actualBoundingBoxRight + 4,
+          top: l.targetY - frame.fy - m.actualBoundingBoxAscent - 4,
+          bottom: l.targetY - frame.fy + m.actualBoundingBoxDescent + 4
+        }
+      })
+      const text = (frameByText[frame.text].description || []).join(' ')
+      if (!text.trim()) { ctx.restore(); return [] }
+      const characters = Array.from(text.replace(/\s/g, ''))
+      const preferredSize = 26
+      // 기존 크기를 중심으로 조금씩 달라지게 하고, 배치와 겹침 검사에도 실제 크기를 쓴다.
+      const sizeOffsets = characters.map(() => Math.floor(random() * 9) - 4)
+      let layout = []
+
+      // 제목을 피해 액자 전체에 기준 격자를 만들고, 설명을 읽는 순서대로 놓는다.
+      for (let fontSize = preferredSize; fontSize >= 20; fontSize--)
+      {
+        const sizes = sizeOffsets.map(offset => fontSize + offset)
+        const metrics = characters.map((char, index) =>
+        {
+          ctx.font = `${sizes[index]}px ${descriptionFont}`
+          return ctx.measureText(char)
+        })
+        const leftInk = Math.max(...metrics.map(m => m.actualBoundingBoxLeft))
+        const rightInk = Math.max(...metrics.map(m => m.actualBoundingBoxRight))
+        const ascent = Math.max(...metrics.map(m => m.actualBoundingBoxAscent))
+        const descent = Math.max(...metrics.map(m => m.actualBoundingBoxDescent))
+        const left = 26 + leftInk, right = 274 - rightInk
+        const top = 26 + ascent, bottom = 374 - descent
+        const maxCols = Math.floor((right - left) / (leftInk + rightInk + 4)) + 1
+        const maxRows = Math.floor((bottom - top) / (ascent + descent + 4)) + 1
+        let best = null, bestScore = Infinity
+        for (let cols = 4; cols <= maxCols; cols++)
+        {
+          for (let rows = 5; rows <= maxRows; rows++)
+          {
+            const stepX = (right - left) / (cols - 1), stepY = (bottom - top) / (rows - 1)
+            const cells = []
+            for (let row = 0; row < rows; row++)
+            {
+              for (let col = 0; col < cols; col++)
+              {
+                const x = left + col * stepX, y = top + row * stepY
+                if (!occupied.some(box => x + rightInk > box.left && x - leftInk < box.right && y + descent > box.top && y - ascent < box.bottom))
+                {
+                  cells.push({ x, y, row, col })
+                }
+              }
+            }
+            if (cells.length < characters.length) continue
+            const score = (cells.length - characters.length) * 4 + Math.abs(Math.log(stepX / stepY)) * characters.length
+            if (score < bestScore) { best = cells; bestScore = score }
+          }
+        }
+        if (!best) continue
+
+        // 여분의 칸이 있어도 한쪽으로 몰리지 않도록 가장 먼 칸부터 고른다.
+        const selected = [best[0]]
+        const chosen = new Set(selected)
+        while (selected.length < characters.length)
+        {
+          let next, farthest = -1
+          best.forEach(cell =>
+          {
+            if (chosen.has(cell)) return
+            const distance = Math.min(...selected.map(other => (cell.x - other.x) ** 2 + (cell.y - other.y) ** 2))
+            if (distance > farthest) { next = cell; farthest = distance }
+          })
+          selected.push(next)
+          chosen.add(next)
+        }
+        selected.sort((a, b) => a.row - b.row || a.col - b.col)
+        layout = characters.map((char, index) => ({
+          char, charIndex: index, descriptionIndex: 0, fontSize: sizes[index],
+          targetX: selected[index].x, targetY: selected[index].y, targetAngle: 0
+        }))
+        break
+      }
+
+      // 회전한 글자의 실제 외곽 상자로 제목과 설명 사이의 겹침을 검사한다.
+      const glyphBounds = (char, fontSize, font, angle, bold = false) =>
+      {
+        ctx.font = `${bold ? 'bold ' : ''}${fontSize}px ${font}`
+        const m = ctx.measureText(char)
+        const c = Math.round(Math.cos(angle)), s = Math.round(Math.sin(angle))
+        const corners = [
+          [-m.actualBoundingBoxLeft, -m.actualBoundingBoxAscent],
+          [m.actualBoundingBoxRight, -m.actualBoundingBoxAscent],
+          [m.actualBoundingBoxRight, m.actualBoundingBoxDescent],
+          [-m.actualBoundingBoxLeft, m.actualBoundingBoxDescent]
+        ].map(([x, y]) => ({ x: x * c - y * s, y: x * s + y * c }))
+        return {
+          left: Math.min(...corners.map(p => p.x)) - 2,
+          right: Math.max(...corners.map(p => p.x)) + 2,
+          top: Math.min(...corners.map(p => p.y)) - 2,
+          bottom: Math.max(...corners.map(p => p.y)) + 2
+        }
+      }
+      const translated = (box, x, y) => ({ left: box.left + x, right: box.right + x, top: box.top + y, bottom: box.bottom + y })
+      const overlaps = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
+      const titleBounds = frame.letters.map(letter => translated(
+        glyphBounds(letter.char, letter.fontSize, letter.font, letter.baseAngle, true),
+        letter.baseX - frame.fx, letter.baseY - frame.fy
+      ))
+      let scattered = null
+      for (let pass = 0; pass < 12 && !scattered; pass++)
+      {
+        const placed = titleBounds.slice()
+        const positions = []
+        const order = layout.map((letter, index) =>
+        {
+          const angle = Math.floor(random() * 4) * quarterTurn
+          const box = glyphBounds(letter.char, letter.fontSize, descriptionFont, angle)
+          return { index, angle, box, area: (box.right - box.left) * (box.bottom - box.top) + random() }
+        }).sort((a, b) => b.area - a.area)
+        for (const item of order)
+        {
+          const minX = 22 - item.box.left, maxX = 278 - item.box.right
+          const minY = 22 - item.box.top, maxY = 378 - item.box.bottom
+          let position = null
+          const tryPosition = (x, y) =>
+          {
+            const box = translated(item.box, x, y)
+            if (placed.some(other => overlaps(box, other))) return false
+            position = { baseX: x, baseY: y, baseAngle: item.angle }
+            placed.push(box)
+            return true
+          }
+          for (let attempt = 0; attempt < 600 && !position; attempt++)
+          {
+            tryPosition(minX + random() * (maxX - minX), minY + random() * (maxY - minY))
+          }
+          // 무작위 탐색에서 놓친 좁은 빈자리도 검사한다. 겹친 좌표는 사용하지 않는다.
+          for (let y = minY; y <= maxY && !position; y += 2)
+          {
+            for (let x = minX; x <= maxX && !position; x += 2) tryPosition(x, y)
+          }
+          if (!position) break
+          positions[item.index] = position
+        }
+        if (positions.filter(Boolean).length === layout.length) scattered = positions
+      }
+      if (!scattered) throw new Error('Unable to place description letters without overlap')
+      layout = layout.map((letter, index) => ({
+        ...letter, ...scattered[index],
+        motion: random() < 0.5 ? 'glide' : 'jump',
+        jumpDelay: Math.floor(random() * 6) * 60
+      }))
+      // 모인 상태도 반듯한 격자에서 조금씩 어긋나게 하되 제목과 이웃 글자를 피한다.
+      const targetBounds = layout.map(letter => translated(
+        glyphBounds(letter.char, letter.fontSize, descriptionFont, 0), letter.targetX, letter.targetY
+      ))
+      layout.forEach((letter, index) =>
+      {
+        const bounds = glyphBounds(letter.char, letter.fontSize, descriptionFont, 0)
+        for (let attempt = 0; attempt < 32; attempt++)
+        {
+          const x = letter.targetX + (random() * 2 - 1) * 6
+          const y = letter.targetY + (random() * 2 - 1) * 8
+          const box = translated(bounds, x, y)
+          if (box.left < 24 || box.right > 276 || box.top < 24 || box.bottom > 376) continue
+          if (occupied.some(other => overlaps(box, other))) continue
+          if (targetBounds.some((other, otherIndex) => otherIndex !== index && overlaps(box, other))) continue
+          letter.targetX = x; letter.targetY = y
+          targetBounds[index] = box
+          break
+        }
+      })
+      ctx.restore()
+      return layout
+    }
+
+    function drawFrameDescriptions(frame, isActive, now)
+    {
+      let moving = false
+      ctx.save()
+      ctx.beginPath()
+      ctx.rect(frame.fx + 18, frame.fy + 18, 264, 364)
+      ctx.clip()
+      ctx.fillStyle = '#d0d0d0'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      frame.descriptions.forEach(letter =>
+      {
+        const x = isActive ? letter.targetX : letter.baseX
+        const y = isActive ? letter.targetY : letter.baseY
+        const angle = isActive ? 0 : letter.baseAngle
+        if (letter.motion === 'jump')
+        {
+          // 일부 글자는 짧은 시차를 두고 바로 이동하고, 나머지는 기존처럼 움직인다.
+          if (now - frame.transitionStartTime >= letter.jumpDelay)
+          {
+            letter.currX = x; letter.currY = y; letter.currAngle = angle
+          } else moving = true
+        } else if (ease(letter, x, y, angle, letter.fontSize)) moving = true
+        ctx.save()
+        ctx.translate(letter.currX, letter.currY)
+        ctx.rotate(Math.round(letter.currAngle / quarterTurn) * quarterTurn)
+        ctx.font = `${letter.fontSize}px ${descriptionFont}`
+        ctx.fillText(letter.char, 0, 0)
+        ctx.restore()
+      })
+      ctx.restore()
+      return moving
+    }
+
     function initFrame(fx, fy, text, isInteractive = false)
     {
       const frameW = 300, frameH = 400, border = 18
-      const frame = { fx, fy, text, letters: [], isHovered: false, wasHovered: false, hoverStartTime: 0, mode: 0 }
+      const frame = { fx, fy, text, letters: [], descriptions: [], isHovered: false, wasHovered: false, hoverStartTime: 0, transitionStartTime: 0, mode: 0 }
 
       frame.drawStatic = () =>
       {
@@ -458,6 +681,14 @@
         }
         frame.letters.push({ char: l.char, baseX, baseY, baseAngle: l.baseAngle, targetX, targetY, targetAngle: 0, currX: baseX, currY: baseY, currAngle: l.baseAngle, fontSize: l.fontSize, targetFontSize, currFontSize: l.fontSize, font: l.font, index: l.index })
       })
+      const descriptionLayout = descriptionLayoutCache[text] || (descriptionLayoutCache[text] = createDescriptionLayout(frame))
+      frame.descriptions = descriptionLayout.map(letter => ({
+        ...letter,
+        baseX: fx + letter.baseX, baseY: fy + letter.baseY,
+        targetX: fx + letter.targetX, targetY: fy + letter.targetY,
+        currX: fx + letter.baseX, currY: fy + letter.baseY,
+        currAngle: letter.baseAngle, currFontSize: letter.fontSize
+      }))
       frames.push(frame)
     }
 
@@ -555,6 +786,7 @@
         const frameData = frameByText[frame.text]
         if (isHovered && frameData && frameData.link) { cursorToSet = 'pointer' }
 
+        if (isHovered !== frame.wasHovered) frame.transitionStartTime = now
         if (isHovered && !frame.wasHovered)
         {
           frame.mode = supportsHover ? (frame.mode + 1) % 2 : 0
@@ -566,6 +798,7 @@
         }
         // 마우스아웃 시에는 재배치하지 않는다. 글자는 원래 자리(baseX/baseY)로 되돌아간다.
         frame.wasHovered = isHovered
+        if (drawFrameDescriptions(frame, isHovered, now)) stillAnimating = true
 
         frame.letters.forEach(l =>
         {
@@ -601,7 +834,7 @@
             ctx.font = `bold ${l.currFontSize}px ${l.font}`
             ctx.fillStyle = '#000000'
             ctx.textBaseline = 'middle'; ctx.textAlign = 'center'
-            ctx.translate(l.currX, l.currY); ctx.rotate(l.currAngle)
+            ctx.translate(l.currX, l.currY); ctx.rotate(Math.round(l.currAngle / quarterTurn) * quarterTurn)
             ctx.fillText(l.char, 0, 0)
             ctx.restore()
           }
@@ -687,6 +920,16 @@
     // 잡혀 4열로 그려지는 문제 방지: 레이아웃이 확정된 다음 프레임/로드 완료 후 그린다.
     requestAnimationFrame(setupAndDraw)
     window.addEventListener('load', setupAndDraw);
+    // 웹 명조체가 준비되면 해당 글꼴의 실제 폭으로 설명만 다시 배치한다.
+    if (document.fonts)
+    {
+      const descriptionText = framesData.flatMap(frame => frame.description || []).join('')
+      document.fonts.load('26px "Noto Serif KR"', descriptionText).then(() =>
+      {
+        Object.keys(descriptionLayoutCache).forEach(key => delete descriptionLayoutCache[key])
+        setupAndDraw()
+      }).catch(() => {})
+    }
     // 유휴 상태에서는 다시 그리지 않으므로, 탭 복귀/bfcache 복원처럼 캔버스 내용이
     // 날아갈 수 있는 시점에는 한 프레임 다시 그려 둔다.
     document.addEventListener('visibilitychange', () => { if (!document.hidden) { queueVisibilityUpdate(); ensureAnimating() } })
