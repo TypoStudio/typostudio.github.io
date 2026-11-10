@@ -190,8 +190,9 @@
     // 마우스(hover 가능한 입력장치)가 하나라도 있으면 true. 터치스크린 데스크톱/노트북에서도
     // 마우스오버가 켜지도록 (hover: hover)가 아닌 (any-hover: hover) 사용.
     const supportsHover = window.matchMedia('(any-hover: hover)').matches
-    // 터치 기기에서 현재 글자가 모여있는(활성) 액자
-    let activeFrameText = null
+    // 터치 기기에서는 화면 안에 완전히 들어온 액자의 글자를 모은다.
+    let visibleFrameTexts = new Set()
+    let visibilityAnimationFrameId = null
     const fonts = ["serif", "sans-serif", "monospace", "cursive", "fantasy"]
     const GITHUB_ICON_PATH = new Path2D("M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z")
     // 액자 정보 단일 소스. text: 액자에 들어가는 글자, link: 프로젝트(데모) 링크, repo: github 저장소.
@@ -259,15 +260,17 @@
       canvasSize = { w: canvasW, h: canvasH }
 
       // iOS 사파리는 캔버스 한 변이 8192px를 넘으면 그 영역을 제대로 래스터화하지 못해
-      // 액자가 부분적으로 깜빡인다. 모바일 1열에서는 캔버스가 4000px 가까이 길어져
-      // devicePixelRatio 3이면 12000px가 되어 이 한계를 넘는다. 논리 해상도는 그대로 두고
+      // 액자가 부분적으로 깜빡인다. 모바일 1열에서는 캔버스가 6000px 가까이 길어져
+      // devicePixelRatio 3이면 18000px가 되어 이 한계를 넘는다. 논리 해상도는 그대로 두고
       // 배율만 낮춘다 (2배를 넘겨봐야 눈에 보이는 차이도 거의 없다).
       const MAX_CANVAS_SIDE = 8192
       const dpr = Math.min(window.devicePixelRatio || 1, 2, MAX_CANVAS_SIDE / canvasW, MAX_CANVAS_SIDE / canvasH)
 
-      // Scale display size down to fit viewport (internal resolution stays full)
+      // 터치 화면에서는 액자와 아이콘이 화면 높이 안에도 들어오도록 제한한다.
       const availW = viewportW - 40
-      const fitScale = canvasW > availW ? availW / canvasW : 1
+      const viewportH = window.visualViewport?.height || window.innerHeight
+      const heightScale = supportsHover ? 1 : Math.max(1, viewportH - 40) / (frameH + bottomIconArea)
+      const fitScale = Math.min(1, availW / canvasW, heightScale)
       const displayW = canvasW * fitScale
       const displayH = canvasH * fitScale
 
@@ -295,7 +298,45 @@
       })
 
       // --- Run Animation Loop ---
+      updateVisibleFrames()
       ensureAnimating()
+    }
+
+    function updateVisibleFrames()
+    {
+      if (supportsHover || !canvasSize) return
+      const rect = canvas.getBoundingClientRect()
+      const viewport = window.visualViewport
+      const top = viewport?.offsetTop || 0
+      const left = viewport?.offsetLeft || 0
+      const bottom = top + (viewport?.height || window.innerHeight)
+      const right = left + (viewport?.width || document.documentElement.clientWidth)
+      const scaleX = rect.width / canvasSize.w, scaleY = rect.height / canvasSize.h
+      const next = new Set()
+      frames.forEach(frame =>
+      {
+        const frameTop = rect.top + frame.fy * scaleY
+        const frameBottom = frameTop + 400 * scaleY
+        const frameLeft = rect.left + frame.fx * scaleX
+        const frameRight = frameLeft + 300 * scaleX
+        if (frameTop >= top - 0.5 && frameBottom <= bottom + 0.5 && frameLeft >= left - 0.5 && frameRight <= right + 0.5)
+        {
+          next.add(frame.text)
+        }
+      })
+      const changed = next.size !== visibleFrameTexts.size || [...next].some(text => !visibleFrameTexts.has(text))
+      visibleFrameTexts = next
+      if (changed) ensureAnimating()
+    }
+
+    function queueVisibilityUpdate()
+    {
+      if (supportsHover || visibilityAnimationFrameId !== null) return
+      visibilityAnimationFrameId = requestAnimationFrame(() =>
+      {
+        visibilityAnimationFrameId = null
+        updateVisibleFrames()
+      })
     }
 
     // 액자별 글자 배치(글자/크기/폰트/각도/좌표)는 페이지 로딩 시 액자당 한 번만 만들어 캐시한다.
@@ -398,14 +439,24 @@
       {
         const baseX = fx + l.dx, baseY = fy + l.dy
         let targetX = baseX, targetY = baseY
+        let targetFontSize = l.fontSize
         if (isInteractive)
         {
           // 줄 안에서 글자를 가로 균등 배치, 줄은 세로 균등 배치
           const m = letterMeta[l.index]
-          targetX = innerX + (innerW / (m.lineLen + 1)) * (m.col + 1)
-          targetY = innerY + innerH * ((m.line + 1) / (lineCount + 1))
+          const cellW = innerW / (m.lineLen + 1), cellH = innerH / (lineCount + 1)
+          targetX = innerX + cellW * (m.col + 1)
+          targetY = innerY + cellH * (m.line + 1)
+          // SNATCH처럼 한 줄인 이름도 큰 글자가 이웃 글자를 덮지 않도록 실제 글꼴 폭으로 제한한다.
+          ctx.save()
+          ctx.font = `bold ${l.fontSize}px ${l.font}`
+          const metrics = ctx.measureText(l.char)
+          const width = Math.max(metrics.width, (metrics.actualBoundingBoxLeft || 0) + (metrics.actualBoundingBoxRight || 0))
+          const height = (metrics.actualBoundingBoxAscent || 0) + (metrics.actualBoundingBoxDescent || 0) || l.fontSize
+          targetFontSize = Math.max(1, Math.floor(l.fontSize * Math.min(1, cellW * 0.8 / width, cellH * 0.7 / height)))
+          ctx.restore()
         }
-        frame.letters.push({ char: l.char, baseX, baseY, baseAngle: l.baseAngle, targetX, targetY, targetAngle: 0, currX: baseX, currY: baseY, currAngle: l.baseAngle, fontSize: l.fontSize, font: l.font, index: l.index })
+        frame.letters.push({ char: l.char, baseX, baseY, baseAngle: l.baseAngle, targetX, targetY, targetAngle: 0, currX: baseX, currY: baseY, currAngle: l.baseAngle, fontSize: l.fontSize, targetFontSize, currFontSize: l.fontSize, font: l.font, index: l.index })
       })
       frames.push(frame)
     }
@@ -458,7 +509,7 @@
       ctx.restore()
     }
 
-    // 글자가 모두 제자리에 오면 루프를 멈춘다. 캔버스가 커서(모바일 1열 기준 약 420x3986)
+    // 글자가 모두 제자리에 오면 루프를 멈춘다. 캔버스가 커서(모바일 1열 기준 약 420x5938)
     // 가만히 있는 동안에도 매 프레임 전체를 지우고 다시 그리면 iOS 사파리에서 액자가
     // 깜빡인다. 입력(마우스 이동/이탈/클릭)이나 재레이아웃이 들어오면 다시 돌린다.
     function ensureAnimating()
@@ -470,17 +521,18 @@
 
     // 글자를 목표 위치로 부드럽게 당긴다. 충분히 가까워지면 목표에 정확히 붙이고 false를
     // 돌려준다(= 더 움직일 것이 없음). 이 값이 루프를 멈출 시점을 정한다.
-    function ease(l, tx, ty, ta)
+    function ease(l, tx, ty, ta, fontSize)
     {
       let diff = ta - l.currAngle
       while (diff > Math.PI) diff -= Math.PI * 2; while (diff < -Math.PI) diff += Math.PI * 2
-      if (Math.abs(tx - l.currX) < 0.05 && Math.abs(ty - l.currY) < 0.05 && Math.abs(diff) < 0.002)
+      if (Math.abs(tx - l.currX) < 0.05 && Math.abs(ty - l.currY) < 0.05 && Math.abs(diff) < 0.002 && Math.abs(fontSize - l.currFontSize) < 0.05)
       {
-        l.currX = tx; l.currY = ty; l.currAngle = ta
+        l.currX = tx; l.currY = ty; l.currAngle = ta; l.currFontSize = fontSize
         return false
       }
       l.currX += (tx - l.currX) * 0.12; l.currY += (ty - l.currY) * 0.12
       l.currAngle += diff * 0.12
+      l.currFontSize += (fontSize - l.currFontSize) * 0.12
       return true
     }
 
@@ -496,17 +548,20 @@
       frames.forEach((frame, idx) =>
       {
         frame.drawStatic()
-        const isHovered = mouse.x >= frame.fx && mouse.x <= frame.fx + frameW && mouse.y >= frame.fy && mouse.y <= frame.fy + frameH
+        const isHovered = supportsHover
+          ? mouse.x >= frame.fx && mouse.x <= frame.fx + frameW && mouse.y >= frame.fy && mouse.y <= frame.fy + frameH
+          : visibleFrameTexts.has(frame.text)
+        frame.isHovered = isHovered
         const frameData = frameByText[frame.text]
         if (isHovered && frameData && frameData.link) { cursorToSet = 'pointer' }
 
         if (isHovered && !frame.wasHovered)
         {
-          frame.mode = (frame.mode + 1) % 2
+          frame.mode = supportsHover ? (frame.mode + 1) % 2 : 0
           frame.hoverStartTime = now
           if (typeof gtag === 'function')
           {
-            gtag('event', 'frame_hover', { frame: frameLabel(frame.text), interaction: 'mouseover' })
+            gtag('event', 'frame_hover', { frame: frameLabel(frame.text), interaction: supportsHover ? 'mouseover' : 'scroll' })
           }
         }
         // 마우스아웃 시에는 재배치하지 않는다. 글자는 원래 자리(baseX/baseY)로 되돌아간다.
@@ -520,30 +575,30 @@
           {
             if (frame.mode === 0)
             {
-              if (ease(l, l.targetX, l.targetY, l.targetAngle)) stillAnimating = true
+              if (ease(l, l.targetX, l.targetY, l.targetAngle, l.targetFontSize)) stillAnimating = true
             } else
             {
               const targetTime = l.index * staggerDelay
               if (elapsed > targetTime)
               {
-                l.currX = l.targetX; l.currY = l.targetY; l.currAngle = l.targetAngle
+                l.currX = l.targetX; l.currY = l.targetY; l.currAngle = l.targetAngle; l.currFontSize = l.targetFontSize
                 alpha = Math.min(1, (elapsed - targetTime) / 200)
                 if (alpha < 1) stillAnimating = true
               } else
               {
-                l.currX = l.baseX; l.currY = l.baseY; l.currAngle = l.baseAngle
+                l.currX = l.baseX; l.currY = l.baseY; l.currAngle = l.baseAngle; l.currFontSize = l.fontSize
                 stillAnimating = true
               }
             }
           } else
           {
-            if (ease(l, l.baseX, l.baseY, l.baseAngle)) stillAnimating = true
+            if (ease(l, l.baseX, l.baseY, l.baseAngle, l.fontSize)) stillAnimating = true
           }
           if (alpha > 0)
           {
             ctx.save()
             ctx.globalAlpha = alpha
-            ctx.font = `bold ${l.fontSize}px ${l.font}`
+            ctx.font = `bold ${l.currFontSize}px ${l.font}`
             ctx.fillStyle = '#000000'
             ctx.textBaseline = 'middle'; ctx.textAlign = 'center'
             ctx.translate(l.currX, l.currY); ctx.rotate(l.currAngle)
@@ -600,30 +655,6 @@
       const clickedFrame = frames.find(frame =>
         clickX >= frame.fx && clickX <= frame.fx + frameW && clickY >= frame.fy && clickY <= frame.fy + frameH)
 
-      // 마우스오버가 없는 터치 기기: 첫 탭은 글자를 모으고, 같은 액자를 다시 탭해야 이동
-      if (!supportsHover)
-      {
-        if (!clickedFrame)
-        {
-          activeFrameText = null
-          mouse.x = -1000; mouse.y = -1000
-          ensureAnimating()
-          return
-        }
-        if (activeFrameText !== clickedFrame.text)
-        {
-          activeFrameText = clickedFrame.text
-          mouse.x = clickedFrame.fx + frameW / 2
-          mouse.y = clickedFrame.fy + frameH / 2
-          ensureAnimating()
-          if (typeof gtag === 'function')
-          {
-            gtag('event', 'frame_hover', { frame: frameLabel(clickedFrame.text), interaction: 'touch' })
-          }
-          return
-        }
-      }
-
       const clickedFrameLink = clickedFrame && frameByText[clickedFrame.text]?.link
       if (clickedFrameLink)
       {
@@ -648,6 +679,9 @@
     })
 
     // --- Initial Load and Resize ---
+    window.addEventListener('scroll', queueVisibilityUpdate, { passive: true })
+    window.visualViewport?.addEventListener('scroll', queueVisibilityUpdate, { passive: true })
+    window.visualViewport?.addEventListener('resize', queueVisibilityUpdate, { passive: true })
     window.addEventListener('resize', setupAndDraw)
     // 모바일 첫 로드 시 viewport(width=device-width) 적용 전 innerWidth가 데스크톱 기본값으로
     // 잡혀 4열로 그려지는 문제 방지: 레이아웃이 확정된 다음 프레임/로드 완료 후 그린다.
@@ -655,8 +689,8 @@
     window.addEventListener('load', setupAndDraw);
     // 유휴 상태에서는 다시 그리지 않으므로, 탭 복귀/bfcache 복원처럼 캔버스 내용이
     // 날아갈 수 있는 시점에는 한 프레임 다시 그려 둔다.
-    document.addEventListener('visibilitychange', () => { if (!document.hidden) ensureAnimating() })
-    window.addEventListener('pageshow', ensureAnimating)
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) { queueVisibilityUpdate(); ensureAnimating() } })
+    window.addEventListener('pageshow', () => { queueVisibilityUpdate(); ensureAnimating() })
     // 타이밍에 의존하지 않도록 실제 레이아웃 폭이 확정/변경될 때마다 다시 그린다.
     // (첫 로드 시 innerWidth가 잘못 읽혀 가로로 넘치는 문제 해결, 수동 resize 불필요)
     if (window.ResizeObserver) {
