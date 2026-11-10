@@ -37,6 +37,10 @@
     }
 
     .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
       width: min(1100px, calc(100vw - 40px));
       margin-bottom: 20px;
     }
@@ -48,11 +52,9 @@
     }
 
     .coffee-link {
-      position: absolute;
-      top: 20px;
-      right: 20px;
       display: flex;
       align-items: center;
+      flex-shrink: 0;
       min-height: 44px;
       color: #333;
       font-family: inherit;
@@ -140,11 +142,6 @@
         padding-top: 80px;
       }
 
-      .header {
-        text-align: center;
-        width: 100%;
-      }
-
       .frame-container {
         margin: 0 auto !important;
         display: flex;
@@ -157,14 +154,22 @@
         padding-bottom: 20px;
       }
     }
+
+    @media (max-width: 600px) {
+      .header {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+      }
+    }
   </style>
 </head>
 
 <body class="body-layout pixel-theme">
-  <a class="coffee-link" href="https://buymeacoffee.com/typ0s2d10" target="_blank" rel="noopener noreferrer"
-    onclick="if (typeof gtag === 'function') gtag('event', 'link_click', { link_type: 'coffee', link_url: 'https://buymeacoffee.com/typ0s2d10' })">Buy me a coffee</a>
   <div class="header">
     <h3>TypoStudio</h3>
+    <a class="coffee-link" href="https://buymeacoffee.com/typ0s2d10" target="_blank" rel="noopener noreferrer"
+      onclick="if (typeof gtag === 'function') gtag('event', 'link_click', { link_type: 'coffee', link_url: 'https://buymeacoffee.com/typ0s2d10' })">Buy me a coffee</a>
   </div>
   <div class="frame-container" style="position: relative; width: 1100px; margin: 0 auto; padding-bottom: 50px;">
     <canvas id="canvas"></canvas>
@@ -200,6 +205,7 @@
       { text: "HOUSE\nBUDGET", link: "https://house-budget.typostudio.dev/", repo: "https://github.com/TypoStudio/h-budget" },
       { text: "FAMILY\nSITE\nLINK", link: "https://familysitelink.typostudio.dev/", repo: null },
       { text: "MATCH\nIT", link: "https://matchit.typostudio.dev", repo: "https://github.com/TypoStudio/matchit" },
+      { text: "SNATCH", link: null, repo: "https://github.com/TypoStudio/snatch" },
       { text: "FOCUS\nPLAY", link: null, repo: "https://github.com/TypoStudio/focus-play" },
       { text: "QL\nZIP\nLIST", link: null, repo: "https://github.com/TypoStudio/qlziplist" },
       { text: "EINK\nCLOCK", link: "https://typostudio.github.io/einkclock/", repo: "https://github.com/TypoStudio/einkclock" },
