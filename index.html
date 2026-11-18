@@ -54,7 +54,7 @@
     .coffee-link {
       display: flex;
       align-items: center;
-      flex-shrink: 0;
+      justify-content: center;
       min-height: 44px;
       color: #333;
       font-family: inherit;
@@ -168,8 +168,6 @@
 <body class="body-layout pixel-theme">
   <div class="header">
     <h3>TypoStudio</h3>
-    <a class="coffee-link" href="https://buymeacoffee.com/typ0s2d10" target="_blank" rel="noopener noreferrer"
-      onclick="if (typeof gtag === 'function') gtag('event', 'link_click', { link_type: 'coffee', link_url: 'https://buymeacoffee.com/typ0s2d10' })">Buy me a coffee</a>
   </div>
   <div class="frame-container" style="position: relative; width: 1100px; margin: 0 auto; padding-bottom: 50px;">
     <canvas id="canvas"></canvas>
@@ -204,6 +202,7 @@
     // text 안의 줄바꿈(\n)이 액자 안 글자의 줄 구성을 결정한다. 줄별 글자 수와 줄 개수로
     // 위치를 계산하므로(아래 initFrame) 새 항목은 분기 추가 없이 자동 배치된다.
     const framesData = [
+      { text: "NAME\nCARD\nSTAND", description: ["넘쳐나는 명함으로 만드는 스마트폰 거치대"], link: "./stand.html", repo: null },
       { text: "TYPHOON\nLAB", description: ["세계 지도에서 바다와 대기 조건으로 태풍을 만들고 도시를 지키는 날씨 시뮬레이션"], link: "https://typhoon.typostudio.dev/", repo: "https://github.com/TypoStudio/typhoon-lab" },
       { text: "AI\nUSAGE", description: ["클로드 코드와 코덱스 여러 계정의 사용 한도를 활동 링으로 보여 주는 맥 바탕화면 위젯"], link: null, repo: "https://github.com/TypoStudio/ai-usage" },
       { text: "HOUSE\nBUDGET", description: ["내 구글 시트에 월별 수입과 지출을 기록하고 이월잔고를 계산하는 웹 가계부"], link: "https://house-budget.typostudio.dev/", repo: "https://github.com/TypoStudio/h-budget" },
@@ -948,6 +947,8 @@
     }
   </script>
   <footer class="footer-content">
+    <a class="coffee-link" href="https://buymeacoffee.com/typ0s2d10" target="_blank" rel="noopener noreferrer"
+      onclick="if (typeof gtag === 'function') gtag('event', 'link_click', { link_type: 'coffee', link_url: 'https://buymeacoffee.com/typ0s2d10' })">Buy me a coffee</a>
     <p>&copy; 2026 TypoStudio. All rights reserved.</p>
   </footer>
 </body>

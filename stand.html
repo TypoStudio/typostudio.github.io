@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-B2XZ82PZVR"></script>
+  <script>
+    window.dataLayer = window.dataLayer || []
+    function gtag() { dataLayer.push(arguments) }
+    gtag('js', new Date())
+
+    gtag('config', 'G-B2XZ82PZVR');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+  <title>Name Card Stand</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      min-height: 100vh;
+      padding: 40px 0 0;
+      background: #e8e8e8;
+      font-family: serif;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      width: min(1100px, calc(100vw - 40px));
+      margin-bottom: 20px;
+    }
+
+    h3 {
+      font-weight: 400;
+      color: #333;
+      margin: 0;
+    }
+
+    .back-link,
+    .coffee-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      color: #333;
+      font-family: inherit;
+      font-size: 0.65rem;
+      line-height: 1.8;
+      text-decoration: none;
+    }
+
+    .back-link:hover,
+    .back-link:focus-visible,
+    .coffee-link:hover,
+    .coffee-link:focus-visible {
+      text-decoration: underline;
+      text-underline-offset: 0.3em;
+    }
+
+    /* index.html 액자(300x400, 테두리 18)를 가로로 눕힌 모양 */
+    .frame-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 40px;
+      padding: 60px 20px;
+    }
+
+    .frame {
+      width: min(400px, calc(100vw - 40px));
+      aspect-ratio: 4 / 3;
+      padding: 18px;
+      background: #f0f0f0;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      box-shadow: 0 6px 30px rgba(0, 0, 0, 0.18);
+    }
+
+    .frame img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: #ffffff;
+      outline: 0.5px solid rgba(0, 0, 0, 0.04);
+    }
+
+    .frame a {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: zoom-in;
+    }
+
+    /* 액자를 누르면 큰 사진을 화면 가운데에 띄운다 */
+    .lightbox {
+      margin: auto;
+      padding: 0;
+      border: 0;
+      outline: none;
+      max-width: none;
+      max-height: none;
+      background: transparent;
+      overflow: visible;
+      cursor: zoom-out;
+    }
+
+    .lightbox::backdrop {
+      background: rgba(0, 0, 0, 0.82);
+    }
+
+    .lightbox img {
+      display: block;
+      width: min(94vw, calc(94vh * 91 / 66), 2184px);
+      aspect-ratio: 91 / 66;
+      background: center / cover no-repeat;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 50px;
+      padding-bottom: 20px;
+      color: #888;
+      font-size: 0.9em;
+    }
+
+    /* 8비트 LCD 픽셀 테마 — 액자는 영향 없음 */
+    :root {
+      --lcd-bg: #c9c9c9;        /* 하단 하드웨어 배경 패널 색상 (회색) */
+      --pixel-color: #65676a;   /* 픽셀 소자 자체의 색상 */
+    }
+
+    body.pixel-theme {
+      background-color: var(--lcd-bg);
+      background-image:
+        linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    body.pixel-theme h3,
+    body.pixel-theme .back-link,
+    body.pixel-theme .coffee-link,
+    body.pixel-theme footer {
+      font-family: 'Press Start 2P', monospace;
+      color: var(--pixel-color);
+      image-rendering: pixelated;
+      /* 픽셀 도트가 배경에 드리우는 그림자 */
+      text-shadow: 3px 3px 3px rgba(83, 83, 83, 0.25);
+    }
+
+    body.pixel-theme h3 {
+      font-size: 1.4rem;
+    }
+
+    body.pixel-theme footer {
+      font-size: 0.6rem;
+      line-height: 1.8;
+    }
+
+    /* Responsive styles */
+    @media (max-width: 1100px) {
+      body {
+        padding-top: 80px;
+      }
+
+      footer {
+        margin-top: 20px;
+        padding-bottom: 20px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .header {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+
+<body class="body-layout pixel-theme">
+  <div class="header">
+    <h3>Name Card Stand</h3>
+    <a class="back-link" href="./">&lt; Back</a>
+  </div>
+  <div class="frame-container">
+    <div class="frame"><a href="images/stand-3-large.webp"><img src="images/stand-3.webp" width="1092" height="792" alt="명함 거치대에 세운 명함"></a></div>
+    <div class="frame"><a href="images/stand-2-large.webp"><img src="images/stand-2.webp" width="1092" height="792" alt="명함 거치대에 가로로 세운 스마트폰"></a></div>
+    <div class="frame"><a href="images/stand-1-large.webp"><img src="images/stand-1.webp" width="1092" height="792" alt="명함을 접어 거치대로 만드는 순서"></a></div>
+  </div>
+  <dialog class="lightbox" id="lightbox"><img alt=""></dialog>
+  <script>
+    const lightbox = document.getElementById('lightbox')
+    const lightboxImage = lightbox.querySelector('img')
+    document.querySelectorAll('.frame a').forEach(link =>
+    {
+      link.addEventListener('click', e =>
+      {
+        if (!lightbox.showModal) return // 지원하지 않으면 링크대로 큰 사진을 연다
+        e.preventDefault()
+        const thumb = link.querySelector('img')
+        // 큰 사진이 내려오는 동안에는 이미 받은 작은 사진을 깔아 둔다.
+        lightboxImage.style.backgroundImage = `url("${thumb.currentSrc || thumb.src}")`
+        lightboxImage.alt = thumb.alt
+        lightboxImage.src = link.href
+        lightbox.showModal()
+      })
+    })
+    lightbox.addEventListener('click', () => lightbox.close())
+  </script>
+  <footer class="footer-content">
+    <a class="coffee-link" href="https://buymeacoffee.com/typ0s2d10" target="_blank" rel="noopener noreferrer"
+      onclick="if (typeof gtag === 'function') gtag('event', 'link_click', { link_type: 'coffee', link_url: 'https://buymeacoffee.com/typ0s2d10' })">Buy me a coffee</a>
+    <p>&copy; 2026 TypoStudio. All rights reserved.</p>
+  </footer>
+</body>
