@@ -16,9 +16,21 @@
   <meta name="google-site-verification" content="KDNq4waLc6J8OY4zjitT7h3_gDvw21oO0Ud8p4fwc4A" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400&family=Press+Start+2P&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
   <title>TypoStudio</title>
   <style>
+    @font-face {
+      font-family: Galmuri11;
+      src: url('./fonts/galmuri/Galmuri11.woff2') format('woff2');
+      font-weight: 400;
+    }
+
+    @font-face {
+      font-family: Galmuri11;
+      src: url('./fonts/galmuri/Galmuri11-Bold.woff2') format('woff2');
+      font-weight: 700;
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -191,8 +203,8 @@
     // 터치 기기에서는 화면 안에 완전히 들어온 액자의 글자를 모은다.
     let visibleFrameTexts = new Set()
     let visibilityAnimationFrameId = null
-    const fonts = ["serif", "sans-serif", "monospace", "cursive", "fantasy"]
-    const descriptionFont = '"Noto Serif KR", "AppleMyungjo", "Batang", serif'
+    const titleFont = '"Press Start 2P", monospace'
+    const descriptionFont = '"Galmuri11", monospace'
     const quarterTurn = Math.PI / 2
     const GITHUB_ICON_PATH = new Path2D("M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z")
     // 액자 정보 단일 소스. description: 액자 안에 작게 흩뿌릴 설명 문구.
@@ -341,7 +353,7 @@
       })
     }
 
-    // 액자별 글자 배치(글자/크기/폰트/각도/좌표)는 페이지 로딩 시 액자당 한 번만 만들어 캐시한다.
+    // 액자별 글자 배치(글자/크기/각도/좌표)는 페이지 로딩 시 액자당 한 번만 만들어 캐시한다.
     // 좌표는 액자 좌상단 기준 상대값이라, 화면 크기가 바뀌어 액자가 다른 칸으로 옮겨가도
     // 재배치(재랜덤) 없이 위치만 옮겨 쓴다. 배치 계산은 글자당 최대 300회 충돌 검사라
     // 비싼데, 예전에는 로딩/리사이즈마다 다시 굴러서 모바일에서 화면이 멎었다.
@@ -366,8 +378,10 @@
       {
         let fontSize = Math.floor(Math.random() * (verticalSegment * 0.5)) + 30
         if (i === extraBigIndex) fontSize *= 3.5; else if (bigIndices.includes(i)) fontSize *= 2.0
+        // 굵은 8비트 글꼴의 큰 글자도 설명이 들어갈 여백을 남긴다.
+        fontSize = Math.min(fontSize, 120)
 
-        const font = fonts[Math.floor(Math.random() * fonts.length)], radius = fontSize * 0.45
+        const radius = fontSize * 0.45
         const segmentTop = i * verticalSegment
         let dx, dy, baseAngle, found = false, bestX, bestY, minOverlap = Infinity
 
@@ -399,11 +413,11 @@
         }
 
         // 안쪽 영역 기준 좌표를 액자 좌상단 기준으로 환산해 둔다.
-        return { char, dx: border + dx, dy: border + dy, baseAngle, fontSize, font, index: i }
+        return { char, dx: border + dx, dy: border + dy, baseAngle, fontSize, index: i }
       })
     }
 
-    function createDescriptionLayout(frame)
+    function createDescriptionLayout(frame, preferredSize = 26)
     {
       // 설명의 난수는 별도로 생성해 기존 제목의 무작위 배치에 영향을 주지 않는다.
       let seed = Array.from(frame.text).reduce((hash, char) => Math.imul(hash ^ char.codePointAt(0), 16777619), 2166136261)
@@ -413,7 +427,7 @@
       ctx.textBaseline = 'middle'
       const occupied = frame.letters.map(l =>
       {
-        ctx.font = `bold ${l.targetFontSize}px ${l.font}`
+        ctx.font = `${l.targetFontSize}px ${titleFont}`
         const m = ctx.measureText(l.char)
         return {
           left: l.targetX - frame.fx - m.actualBoundingBoxLeft - 4,
@@ -425,7 +439,6 @@
       const text = (frameByText[frame.text].description || []).join(' ')
       if (!text.trim()) { ctx.restore(); return [] }
       const characters = Array.from(text.replace(/\s/g, ''))
-      const preferredSize = 26
       // 기존 크기를 중심으로 조금씩 달라지게 하고, 배치와 겹침 검사에도 실제 크기를 쓴다.
       const sizeOffsets = characters.map(() => Math.floor(random() * 9) - 4)
       let layout = []
@@ -496,9 +509,9 @@
       }
 
       // 회전한 글자의 실제 외곽 상자로 제목과 설명 사이의 겹침을 검사한다.
-      const glyphBounds = (char, fontSize, font, angle, bold = false) =>
+      const glyphBounds = (char, fontSize, angle, isTitle = false) =>
       {
-        ctx.font = `${bold ? 'bold ' : ''}${fontSize}px ${font}`
+        ctx.font = `${fontSize}px ${isTitle ? titleFont : descriptionFont}`
         const m = ctx.measureText(char)
         const c = Math.round(Math.cos(angle)), s = Math.round(Math.sin(angle))
         const corners = [
@@ -517,7 +530,7 @@
       const translated = (box, x, y) => ({ left: box.left + x, right: box.right + x, top: box.top + y, bottom: box.bottom + y })
       const overlaps = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
       const titleBounds = frame.letters.map(letter => translated(
-        glyphBounds(letter.char, letter.fontSize, letter.font, letter.baseAngle, true),
+        glyphBounds(letter.char, letter.fontSize, letter.baseAngle, true),
         letter.baseX - frame.fx, letter.baseY - frame.fy
       ))
       let scattered = null
@@ -528,7 +541,7 @@
         const order = layout.map((letter, index) =>
         {
           const angle = Math.floor(random() * 4) * quarterTurn
-          const box = glyphBounds(letter.char, letter.fontSize, descriptionFont, angle)
+          const box = glyphBounds(letter.char, letter.fontSize, angle)
           return { index, angle, box, area: (box.right - box.left) * (box.bottom - box.top) + random() }
         }).sort((a, b) => b.area - a.area)
         for (const item of order)
@@ -558,7 +571,13 @@
         }
         if (positions.filter(Boolean).length === layout.length) scattered = positions
       }
-      if (!scattered) throw new Error('Unable to place description letters without overlap')
+      if (!scattered)
+      {
+        ctx.restore()
+        // 넓은 픽셀 제목 때문에 좁아진 액자도 설명을 조금씩 줄여 끝까지 배치한다.
+        if (preferredSize > 20) return createDescriptionLayout(frame, preferredSize - 1)
+        throw new Error('Unable to place description letters without overlap')
+      }
       layout = layout.map((letter, index) => ({
         ...letter, ...scattered[index],
         motion: random() < 0.5 ? 'glide' : 'jump',
@@ -566,11 +585,11 @@
       }))
       // 모인 상태도 반듯한 격자에서 조금씩 어긋나게 하되 제목과 이웃 글자를 피한다.
       const targetBounds = layout.map(letter => translated(
-        glyphBounds(letter.char, letter.fontSize, descriptionFont, 0), letter.targetX, letter.targetY
+        glyphBounds(letter.char, letter.fontSize, 0), letter.targetX, letter.targetY
       ))
       layout.forEach((letter, index) =>
       {
-        const bounds = glyphBounds(letter.char, letter.fontSize, descriptionFont, 0)
+        const bounds = glyphBounds(letter.char, letter.fontSize, 0)
         for (let attempt = 0; attempt < 32; attempt++)
         {
           const x = letter.targetX + (random() * 2 - 1) * 6
@@ -671,14 +690,14 @@
           targetY = innerY + cellH * (m.line + 1)
           // SNATCH처럼 한 줄인 이름도 큰 글자가 이웃 글자를 덮지 않도록 실제 글꼴 폭으로 제한한다.
           ctx.save()
-          ctx.font = `bold ${l.fontSize}px ${l.font}`
+          ctx.font = `${l.fontSize}px ${titleFont}`
           const metrics = ctx.measureText(l.char)
           const width = Math.max(metrics.width, (metrics.actualBoundingBoxLeft || 0) + (metrics.actualBoundingBoxRight || 0))
           const height = (metrics.actualBoundingBoxAscent || 0) + (metrics.actualBoundingBoxDescent || 0) || l.fontSize
           targetFontSize = Math.max(1, Math.floor(l.fontSize * Math.min(1, cellW * 0.8 / width, cellH * 0.7 / height)))
           ctx.restore()
         }
-        frame.letters.push({ char: l.char, baseX, baseY, baseAngle: l.baseAngle, targetX, targetY, targetAngle: 0, currX: baseX, currY: baseY, currAngle: l.baseAngle, fontSize: l.fontSize, targetFontSize, currFontSize: l.fontSize, font: l.font, index: l.index })
+        frame.letters.push({ char: l.char, baseX, baseY, baseAngle: l.baseAngle, targetX, targetY, targetAngle: 0, currX: baseX, currY: baseY, currAngle: l.baseAngle, fontSize: l.fontSize, targetFontSize, currFontSize: l.fontSize, index: l.index })
       })
       const descriptionLayout = descriptionLayoutCache[text] || (descriptionLayoutCache[text] = createDescriptionLayout(frame))
       frame.descriptions = descriptionLayout.map(letter => ({
@@ -830,7 +849,7 @@
           {
             ctx.save()
             ctx.globalAlpha = alpha
-            ctx.font = `bold ${l.currFontSize}px ${l.font}`
+            ctx.font = `${l.currFontSize}px ${titleFont}`
             ctx.fillStyle = '#000000'
             ctx.textBaseline = 'middle'; ctx.textAlign = 'center'
             ctx.translate(l.currX, l.currY); ctx.rotate(Math.round(l.currAngle / quarterTurn) * quarterTurn)
@@ -919,11 +938,10 @@
     // 잡혀 4열로 그려지는 문제 방지: 레이아웃이 확정된 다음 프레임/로드 완료 후 그린다.
     requestAnimationFrame(setupAndDraw)
     window.addEventListener('load', setupAndDraw);
-    // 웹 명조체가 준비되면 해당 글꼴의 실제 폭으로 설명만 다시 배치한다.
+    // 픽셀 글꼴이 준비되면 제목과 설명을 실제 글자 폭으로 다시 배치한다.
     if (document.fonts)
     {
-      const descriptionText = framesData.flatMap(frame => frame.description || []).join('')
-      document.fonts.load('26px "Noto Serif KR"', descriptionText).then(() =>
+      Promise.all([document.fonts.load('26px Galmuri11'), document.fonts.load('30px "Press Start 2P"')]).then(() =>
       {
         Object.keys(descriptionLayoutCache).forEach(key => delete descriptionLayoutCache[key])
         setupAndDraw()
