@@ -98,6 +98,7 @@ function makeTypePoster(shape, passage, palette, keywords, terms, title, languag
     for (let x = 0; x < cols; x++)
       blocked[y * cols + x] = !(inside(x * cell, y * cell) && inside(x * cell + 1, y * cell) &&
                                  inside(x * cell, y * cell + 1) && inside(x * cell + 1, y * cell + 1))
+  const silhouette = blocked.slice()
 
   function updateSums()
   {
@@ -227,53 +228,95 @@ function makeTypePoster(shape, passage, palette, keywords, terms, title, languag
     }
   }
 
+  // Word rectangles include line spacing, side bearings and the gaps between
+  // title lines. Keep the actual glyphs clear and use that spare paper for copy.
+  blocked.set(silhouette)
+  for (const p of pieces)
+  {
+    const vertical = p.targetAngle !== 0
+    const cx = p.x + (vertical ? p.inkCenterY : p.inkCenterX * p.stretch)
+    const cy = p.y + (vertical ? -p.inkCenterX * p.stretch : p.inkCenterY)
+    const halfW = (vertical ? p.inkHeight : p.inkWidth) / 2 + 0.5
+    const halfH = (vertical ? p.inkWidth : p.inkHeight) / 2 + 0.5
+    const left = Math.max(0, Math.floor((cx - halfW) / cell))
+    const top = Math.max(0, Math.floor((cy - halfH) / cell))
+    const right = Math.min(cols, Math.ceil((cx + halfW) / cell))
+    const bottom = Math.min(rows, Math.ceil((cy + halfH) / cell))
+    reserve(left, top, right - left, bottom - top)
+  }
+
   const copy = passage.trim().replace(/\s+/g, ' ') + ' '
   const letters = segmenter ? Array.from(segmenter.segment(copy), part => part.segment) : Array.from(copy)
   let cursor = 0
-  const smallSize = 8
-  const smallFont = `${bodyWeight} ${smallSize}px ${bodyFace}`
-  const band = Math.ceil((smallSize + 1) / cell)
-  const nextChar = () => letters[cursor % letters.length]
-
-  function freeColumns(left, top)
+  function flowCopy(size, vertical, minLetters)
   {
-    let x = left
-    for (; x < cols; x++)
+    const font = `${bodyWeight} ${size}px ${bodyFace}`
+    ink.font = font
+    const band = Math.ceil(size / cell)
+    const length = vertical ? rows : cols, breadth = vertical ? cols : rows
+    for (let across = 0; copy.length > 1 && across + band <= breadth; across++)
     {
-      let y = top
-      while (y < top + band && !blocked[y * cols + x]) y++
-      if (y < top + band) break
-    }
-    return x - left
-  }
-
-  ink.font = smallFont
-  // Flow consecutive phrases through the remaining interior pockets in reading order.
-  for (let top = 0; copy.length > 1 && top + band <= rows; top++)
-  {
-    for (let left = 0; left < cols;)
-    {
-      const span = freeColumns(left, top)
-      if (span > 0)
+      for (let along = 0; along < length;)
       {
-        if (nextChar() === ' ') cursor++
-        let line = ''
-        while (ink.measureText(line + nextChar()).width + 1 <= span * cell)
+        let end = along
+        for (; end < length; end++)
         {
-          line += nextChar()
-          cursor++
+          let j = across
+          while (j < across + band && !blocked[vertical ? end * cols + j : j * cols + end]) j++
+          if (j < across + band) break
         }
-        line = line.trimEnd()
-        if (line)
+        const available = (end - along) * cell
+        if (available >= size)
         {
-          const w = Math.ceil((ink.measureText(line).width + 1) / cell)
-          reserve(left, top, w, band)
-          addWord(line, (left + w / 2) * cell, (top + band / 2) * cell, smallSize, smallFont, palette[2], 0, false)
+          let next = cursor
+          if (letters[next % letters.length] === ' ') next++
+          let line = '', extent = 0, wordEnd = 0, wordExtent = 0
+          for (;;)
+          {
+            const letter = letters[next % letters.length]
+            if (letter === ' ')
+            {
+              wordEnd = next
+              wordExtent = extent
+            }
+            const candidate = line + letter
+            const m = ink.measureText(candidate)
+            // addWord centers by advance. Allow for ink overhang on either side.
+            const w = 2 * Math.max(m.width / 2 + m.actualBoundingBoxLeft, m.actualBoundingBoxRight - m.width / 2)
+            if (Math.max(w, m.width) > available || m.actualBoundingBoxAscent + m.actualBoundingBoxDescent > band * cell) break
+            line = candidate
+            extent = Math.max(w, m.width)
+            next++
+          }
+          // Keep complete words together when the pocket is wide enough.
+          if (wordEnd && letters[next % letters.length] !== ' ')
+          {
+            line = line.slice(0, line.lastIndexOf(' '))
+            next = wordEnd
+            extent = wordExtent
+          }
+          if (line.trimEnd().length >= minLetters)
+          {
+            const run = Math.ceil(extent / cell)
+            const left = vertical ? across : along, top = vertical ? along : across
+            const w = vertical ? band : run, h = vertical ? run : band
+            reserve(left, top, w, h)
+            addWord(line, (left + w / 2) * cell, (top + h / 2) * cell, size, font,
+                    palette[2], vertical ? -Math.PI / 2 : 0, false)
+            cursor = next
+          }
         }
+        along = end + 1
       }
-      left += span + 1
     }
   }
+  // Favor readable runs first, then fit shorter fragments into narrow details.
+  for (const size of [8, 6])
+  {
+    flowCopy(size, false, 2)
+    flowCopy(size, true, 2)
+  }
+  flowCopy(6, false, 1)
 
   // Reuse the packing grid for the scattered view, reserving shared slots first.
   matchScatterSlots(pieces, previousPieces)
