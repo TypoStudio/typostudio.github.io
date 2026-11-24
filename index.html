@@ -15,9 +15,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="google-site-verification" content="KDNq4waLc6J8OY4zjitT7h3_gDvw21oO0Ud8p4fwc4A" />
   <link rel="preload" href="./fonts/press-start-2p/PressStart2P-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="./fonts/press-start-2p/font.css">
   <title>TypoStudio</title>
   <style>
+    @font-face {
+      font-family: 'Press Start 2P';
+      src: url('./fonts/press-start-2p/PressStart2P-Regular.woff2') format('woff2');
+      font-weight: 400;
+      font-display: swap;
+    }
+
     @font-face {
       font-family: Jua;
       src: url('./fonts/jua/Jua-Regular.woff2') format('woff2');
@@ -77,6 +83,35 @@
 
     canvas {
       display: block;
+    }
+
+    .loading-frame {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 300px;
+      height: 400px;
+      transform-origin: top left;
+      display: grid;
+      place-items: center;
+      background: #fffefd;
+      border: 18px solid #f0f0f0;
+      box-shadow: 0 6px 30px rgba(0, 0, 0, .18);
+      pointer-events: none;
+    }
+    .loading-frame[hidden] { display: none; }
+    .loading-frame::before {
+      content: '';
+      width: 24px;
+      height: 24px;
+      border: 3px solid #dedede;
+      border-top-color: #65676a;
+      border-radius: 50%;
+      animation: loading-spin .8s linear infinite;
+    }
+    @keyframes loading-spin { to { transform: rotate(1turn); } }
+    @media (prefers-reduced-motion: reduce) {
+      .loading-frame::before { animation: none; }
     }
 
     footer {
@@ -176,10 +211,11 @@
     <h3>TypoStudio</h3>
   </div>
   <div class="frame-container" style="position: relative; width: 1100px; margin: 0 auto; padding-bottom: 50px;">
-    <canvas id="canvas"><ul id="project-list"></ul></canvas>
+    <canvas id="canvas" aria-busy="true"><ul id="project-list"></ul></canvas>
+    <div id="loading-frame" class="loading-frame" role="status" aria-label="Loading gallery"></div>
   </div>
-  <script src="./poster-shapes.js"></script>
-  <script src="./poster-type.js"></script>
+  <script defer src="./poster-shapes.js"></script>
+  <script defer src="./poster-type.js"></script>
   <script>
     // --- Global State ---
     const canvas = document.getElementById('canvas')
@@ -408,18 +444,54 @@
 
 
     // --- Main Setup and Drawing Function ---
-    let posterFontsReady = false
+    const loadingFrame = document.getElementById('loading-frame')
+    const revealMs = 320
+    let loadingStartedAt = 0
+    let frameSlots = []
+
+    function positionLoadingFrame()
+    {
+      const slot = frameSlots[frames.length]
+      loadingFrame.hidden = !slot || frames.length > 0
+      canvas.setAttribute('aria-busy', String(Boolean(slot)))
+      if (!loadingFrame.hidden) {
+        const scale = canvasSize.scale
+        loadingFrame.style.transform = `translate(${slot.x * scale}px, ${slot.y * scale}px) scale(${scale})`
+        if (loadingFrame.dataset.project !== slot.text) {
+          loadingFrame.dataset.project = slot.text
+          loadingStartedAt = performance.now()
+          loadingFrame.getAnimations().forEach(animation => animation.cancel())
+          if (!reducedMotion.matches) loadingFrame.animate({ opacity: [0, 1] }, revealMs)
+        }
+      }
+    }
+
+    function loadNextPoster()
+    {
+      const slot = frameSlots[frames.length]
+      if (!slot) return
+      initFrame(slot.x, slot.y, slot.text)
+      positionLoadingFrame()
+      updateVisibleFrames()
+      ensureAnimating()
+      if (frames.length < frameSlots.length) scheduleNextPoster()
+    }
+
+    function scheduleNextPoster()
+    {
+      // Paint each ready poster before packing the next one.
+      requestAnimationFrame(() => setTimeout(loadNextPoster, 0))
+    }
+
     function setupAndDraw()
     {
-      if (!posterFontsReady) return
       if (animationFrameId)
       {
         cancelAnimationFrame(animationFrameId)
         animationFrameId = null
       }
       isAnimating = false
-      const previousFrames = new Map(frames.map(frame => [frame.text, frame]))
-      frames.length = 0
+      const previousFrames = frames.splice(0)
       githubIcons.length = 0
       wipIcons.length = 0
 
@@ -435,10 +507,7 @@
       const viewportW = document.documentElement.clientWidth
       const cols = viewportW <= 512 ? 1 : viewportW <= 1024 ? 2 : 4
       const padding = cols === 1 ? 16 : 60
-      const layout = framesData.map(f => f.text)
-      const iconKeys = framesData.filter(f => f.repo).map(f => f.text)
-      const wipKeys = framesData.filter(f => f.wip).map(f => f.text)
-      const rows = Math.ceil(layout.length / cols)
+      const rows = Math.ceil(framesData.length / cols)
       const cellX = i => padding + (i % cols) * (frameW + spacing)
       const cellY = i => padding + Math.floor(i / cols) * (frameH + rowGap)
 
@@ -446,7 +515,6 @@
       const canvasWrapper = canvas.parentElement
       const canvasW = frameW * cols + spacing * (cols - 1) + padding * 2
       const canvasH = padding * 2 + frameH * rows + rowGap * (rows - 1) + bottomIconArea
-      canvasSize = { w: canvasW, h: canvasH }
 
       // iOS 사파리는 캔버스 한 변이 8192px를 넘으면 그 영역을 제대로 래스터화하지 못해
       // 액자가 부분적으로 깜빡인다. 모바일 1열에서는 캔버스가 6000px 가까이 길어져
@@ -460,6 +528,7 @@
       const viewportH = window.visualViewport?.height || window.innerHeight
       const heightScale = supportsHover ? 1 : Math.max(1, viewportH - 40) / (frameH + bottomIconArea)
       const fitScale = Math.min(1, availW / canvasW, heightScale)
+      canvasSize = { w: canvasW, h: canvasH, scale: fitScale }
       // 아이콘의 도트만 페이지 제목과 같은 화면상 크기로 유지한다.
       pixelSize = parseFloat(getComputedStyle(document.querySelector('h3')).fontSize) / 8 / fitScale
       const displayW = canvasW * fitScale
@@ -476,17 +545,9 @@
       ctx.scale(dpr, dpr)
 
       // --- Initialize Frames ---
-      layout.forEach((text, i) => initFrame(cellX(i), cellY(i), text, previousFrames.get(text)))
-      iconKeys.forEach(key =>
-      {
-        const i = layout.indexOf(key)
-        registerGithubIcon(cellX(i) + frameW / 2, cellY(i) + frameH + 28, key)
-      })
-      wipKeys.forEach(key =>
-      {
-        const i = layout.indexOf(key)
-        wipIcons.push({ x: cellX(i) + frameW / 2, y: cellY(i) + frameH + 28 })
-      })
+      frameSlots = framesData.map(({ text }, i) => ({ text, x: cellX(i), y: cellY(i) }))
+      previousFrames.forEach((frame, i) => initFrame(frameSlots[i].x, frameSlots[i].y, frame.text, frame))
+      positionLoadingFrame()
 
       // --- Run Animation Loop ---
       updateVisibleFrames()
@@ -535,6 +596,7 @@
     for (const project of framesData)
     {
       const item = document.createElement('li')
+      item.hidden = true
       if (project.link) {
         const link = document.createElement('a')
         link.href = project.link
@@ -552,12 +614,20 @@
       const copy = project[language]
       const title = copy.title ?? project.text
       const palette = framesData[Math.floor(Math.random() * framesData.length)].palette
-      frame.poster = makeTypePoster(posterShapes[frameLabel(project.text)], copy.passage,
-                                    palette, copy.keywords, copy.terms, title, language, frame.poster?.pieces)
+      try {
+        frame.poster = makeTypePoster(posterShapes[frameLabel(project.text)], copy.passage,
+                                      palette, copy.keywords, copy.terms, title, language, frame.poster?.pieces)
+      } catch (error) {
+        console.error('Could not prepare poster:', project.text, error)
+        if (frame.poster) return
+      }
       frame.language = language
-      frame.positions = new Float64Array(frame.poster.pieces.length)
-      frame.origins = new Float64Array(frame.poster.pieces.length)
+      if (frame.poster) {
+        frame.positions = new Float64Array(frame.poster.pieces.length)
+        frame.origins = new Float64Array(frame.poster.pieces.length)
+      }
       const item = projectDescriptions.get(frame.text)
+      item.hidden = false
       item.lang = language
       const description = item.firstElementChild || item
       description.textContent = title.replace(/\n/g, ' ') + ' — ' + copy.passage
@@ -569,7 +639,11 @@
       const frame = previous ?? { text, isHovered: false, progress: 0, startedAt: 0 }
       frame.fx = fx
       frame.fy = fy
-      if (!previous) setPosterLanguage(frame, Math.random() < 0.5 ? 'ko' : 'en')
+      if (!previous) {
+        setPosterLanguage(frame, Math.random() < 0.5 ? 'ko' : 'en')
+        frame.readyAt = performance.now()
+        frame.enteredAt = frames.length === 0 ? loadingStartedAt : frame.readyAt
+      }
 
       frame.drawStatic = () =>
       {
@@ -587,17 +661,21 @@
       }
 
       frames.push(frame)
+      const project = frameByText[text]
+      if (project.repo) registerGithubIcon(fx + frameW / 2, fy + frameH + 28, frame)
+      if (project.wip) wipIcons.push({ x: fx + frameW / 2, y: fy + frameH + 28, frame })
     }
 
-    function registerGithubIcon(x, y, projectKey)
+    function registerGithubIcon(x, y, frame)
     {
       githubIcons.push({
         x,
         y,
         size: 32,
         radius: 20,
-        projectKey,
-        href: frameByText[projectKey].repo
+        frame,
+        projectKey: frame.text,
+        href: frameByText[frame.text].repo
       })
     }
 
@@ -623,6 +701,7 @@
         pixelIconCache.set(cells, path)
       }
       ctx.save()
+      ctx.globalAlpha = icon.frame.revealOpacity
       ctx.translate(icon.x, icon.y)
       ctx.scale(pixelSize, pixelSize)
       ctx.fillStyle = isHovered ? '#000000' : '#555555'
@@ -631,10 +710,11 @@
     }
 
     // 공사중 표시용 바리케이드 아이콘. github 아이콘과 같은 색/자리에 그리되 상호작용은 없다.
-    function drawWipIcon(x, y)
+    function drawWipIcon(icon)
     {
       ctx.save()
-      ctx.translate(x, y)
+      ctx.globalAlpha = icon.frame.revealOpacity
+      ctx.translate(icon.x, icon.y)
       ctx.scale(pixelSize, pixelSize)
       ctx.fillStyle = '#555555'
       ctx.fill(WIP_ICON_PATH)
@@ -658,16 +738,33 @@
       let cursorToSet = 'default'
       let stillAnimating = false
       const hoveredGithubIcon = getHoveredGithubIcon(mouse.x, mouse.y)
+      const opacitySince = start => reducedMotion.matches ? 1 : Math.min(1, Math.max(0, (time - start) / revealMs))
 
       frames.forEach(frame =>
       {
+        // Continue the first placeholder's fade; later frames fade in with their text.
+        ctx.save()
+        ctx.globalAlpha = opacitySince(frame.enteredAt)
         frame.drawStatic()
+        ctx.restore()
+        frame.revealOpacity = opacitySince(frame.readyAt)
+        if (frame.revealOpacity < 1) stillAnimating = true
         const isHovered = supportsHover
           ? mouse.x >= frame.fx && mouse.x <= frame.fx + frameW && mouse.y >= frame.fy && mouse.y <= frame.fy + frameH
           : visibleFrameTexts.has(frame.text)
         const frameData = frameByText[frame.text]
         if (isHovered && frameData && frameData.link) { cursorToSet = 'pointer' }
 
+        if (!frame.poster) {
+          ctx.save()
+          ctx.globalAlpha = frame.revealOpacity
+          ctx.font = '18px "Press Start 2P", monospace'
+          ctx.fillStyle = '#555'
+          ctx.textAlign = 'center'
+          ctx.fillText(frame.text.replace(/\n/g, ' '), frame.fx + frameW / 2, frame.fy + frameH / 2, frameW - 60)
+          ctx.restore()
+          return
+        }
         if (isHovered && !frame.isHovered && typeof gtag === 'function')
           gtag('event', 'frame_hover', { frame: frameLabel(frame.text), interaction: supportsHover ? 'mouseover' : 'scroll' })
         const target = isHovered ? 1 : 0
@@ -712,7 +809,7 @@
         ctx.translate(frame.fx + 30, frame.fy + 50)
         const blend = frame.outgoing && !reducedMotion.matches
           ? Math.min(1, (time - frame.languageChangedAt) / 140) : 1
-        ctx.globalAlpha = blend
+        ctx.globalAlpha = frame.revealOpacity * blend
         if (frame.progress === target)
         {
           const image = frame.progress === 1 ? frame.poster.assembled : frame.poster.scattered
@@ -723,7 +820,7 @@
         {
           if (blend < 1)
           {
-            ctx.globalAlpha = 1 - blend
+            ctx.globalAlpha = frame.revealOpacity * (1 - blend)
             ctx.drawImage(frame.outgoing, 0, 0, frame.outgoing.width / 2, frame.outgoing.height / 2)
             stillAnimating = true
           }
@@ -733,7 +830,7 @@
 
       })
       githubIcons.forEach(icon => drawGithubIcon(icon, hoveredGithubIcon === icon))
-      wipIcons.forEach(icon => drawWipIcon(icon.x, icon.y))
+      wipIcons.forEach(drawWipIcon)
       if (hoveredGithubIcon)
       {
         cursorToSet = 'pointer'
@@ -808,16 +905,14 @@
     window.visualViewport?.addEventListener('scroll', queueVisibilityUpdate, { passive: true })
     window.visualViewport?.addEventListener('resize', queueVisibilityUpdate, { passive: true })
     window.addEventListener('resize', setupAndDraw)
-    // 모바일 첫 로드 시 viewport(width=device-width) 적용 전 innerWidth가 데스크톱 기본값으로
-    // 잡혀 4열로 그려지는 문제 방지: 레이아웃이 확정된 다음 프레임/로드 완료 후 그린다.
+    // 액자 자리는 즉시 잡고, 글자 배치는 폰트와 포스터 스크립트가 준비된 뒤 시작한다.
     const posterFonts = document.fonts
       ? [document.fonts.load('16px "Press Start 2P"'), document.fonts.load('16px Jua', '한글')]
       : []
-    Promise.allSettled(posterFonts).then(() => {
-      posterFontsReady = true
-      requestAnimationFrame(setupAndDraw)
-    })
-    window.addEventListener('load', setupAndDraw);
+    setupAndDraw()
+    document.addEventListener('DOMContentLoaded', () => {
+      Promise.allSettled(posterFonts).then(scheduleNextPoster)
+    }, { once: true })
     // 유휴 상태에서는 다시 그리지 않으므로, 탭 복귀/bfcache 복원처럼 캔버스 내용이
     // 날아갈 수 있는 시점에는 한 프레임 다시 그려 둔다.
     document.addEventListener('visibilitychange', () => { if (!document.hidden) { queueVisibilityUpdate(); ensureAnimating() } })
