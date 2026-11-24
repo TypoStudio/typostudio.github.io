@@ -3,3 +3,9 @@
 ruvector.db
 resume*
 typ0s2d10.html
+
+/_career/private/
+/_career/.dev.vars*
+.wrangler/
+!/_career/styles/resume.css
+!/_career/styles/resume-custom.css

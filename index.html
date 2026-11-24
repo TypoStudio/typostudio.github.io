@@ -389,6 +389,18 @@
           passage: "실제 지도의 축구장을 찾아 골대를 세우고, 캐릭터 앞에 놓인 공을 찹니다. 공이 골문을 통과하면 여러 색의 입자가 터집니다. 앞에 있는 물건은 인벤토리에 넣었다가 다른 자리에 꺼낼 수 있습니다. 건설 모드에서는 물건을 집어 방향과 크기를 바꾸고 바닥 위로 옮깁니다. 걷기 모드와 순간 이동을 바꿔 가며 지도를 둘러볼 수 있습니다."
         }
       },
+      {
+        text: "RESUME", link: "https://typ0s2d10-resume.typ0s2d10.workers.dev/", repo: null,
+        palette: ["#294861", "#476e86", "#748a98"],
+        en: {
+          keywords: ["Build", "Code"], terms: ["design", "team", "tools", "work"],
+          passage: "Open the developer resume. Explore the work behind web and mobile software, from writing code and designing systems to keeping services running."
+        },
+        ko: {
+          title: "이력서", keywords: ["개발", "경력"], terms: ["설계", "운영", "코드", "기술"],
+          passage: "개발자의 경력서를 엽니다. 웹과 모바일 소프트웨어의 설계부터 코드 작성, 서비스 운영까지 이어지는 개발 경험을 살펴보십시오."
+        }
+      },
     ]
     const frameByText = Object.fromEntries(framesData.map(f => [f.text, f]))
     // GA 이벤트/식별용 라벨: 줄바꿈 제거한 순수 이름
@@ -523,6 +535,13 @@
     for (const project of framesData)
     {
       const item = document.createElement('li')
+      if (project.link) {
+        const link = document.createElement('a')
+        link.href = project.link
+        link.target = '_blank'
+        link.rel = 'noopener'
+        item.appendChild(link)
+      }
       projectList.appendChild(item)
       projectDescriptions.set(project.text, item)
     }
@@ -540,7 +559,8 @@
       frame.origins = new Float64Array(frame.poster.pieces.length)
       const item = projectDescriptions.get(frame.text)
       item.lang = language
-      item.textContent = title.replace(/\n/g, ' ') + ' — ' + copy.passage
+      const description = item.firstElementChild || item
+      description.textContent = title.replace(/\n/g, ' ') + ' — ' + copy.passage
     }
 
     function initFrame(fx, fy, text, previous)
